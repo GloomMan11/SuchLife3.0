@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.XR;
 
 
 public class ClientNetworkManager : MonoBehaviour
@@ -81,15 +80,15 @@ public class ClientNetworkManager : MonoBehaviour
 
 
     private void Awake() {
-        currentSaveManager = GameObject.FindFirstObjectByType<SaveObjectsManager>();
-        initialWorldSetup = GameObject.FindFirstObjectByType<InitialWorldSetup>();
+        currentSaveManager = FindAnyObjectByType<SaveObjectsManager>();
+        initialWorldSetup = FindAnyObjectByType<InitialWorldSetup>();
     }
 
     void Start()
     {
         if (!DataService.IsLocalSave && DataService.IsMultiplayer) {
             ExecuteOtherThreadRequestQueue = new ConcurrentQueue<NetworkMainThreadStruct>();
-            initialWorldSetup = GameObject.FindAnyObjectByType<InitialWorldSetup>();
+            initialWorldSetup = FindAnyObjectByType<InitialWorldSetup>();
             if (!Uri.TryCreate(DataService.IpOfServer, UriKind.Absolute, out Uri urlWithIpAndPort)) {
                 Debug.Log("Try with http?");
                 Debug.Log("http://" + DataService.IpOfServer);

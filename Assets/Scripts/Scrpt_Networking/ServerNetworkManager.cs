@@ -301,7 +301,7 @@ public class ServerNetworkManager : MonoBehaviour
     }
 
     private void Awake() {
-        currentSaveManager = GameObject.FindFirstObjectByType<SaveObjectsManager>();
+        currentSaveManager = FindAnyObjectByType<SaveObjectsManager>();
         ExecuteOtherThreadRequestQueue = new ConcurrentQueue<NetworkMainThreadStruct>();
     }
 
