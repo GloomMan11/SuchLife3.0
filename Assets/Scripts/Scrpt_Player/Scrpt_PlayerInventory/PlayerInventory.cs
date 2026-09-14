@@ -139,7 +139,7 @@ public class PlayerInventory : MonoBehaviour
         {
    
             
-            if (Input.GetKeyDown(i.ToString())) // Check if a number key is pressed
+            if (InputHandler.Instance.IsInventoryKey[i]) // Check if a number key is pressed
             {
 
                 if(selectedItem != -1){ //if selectedItem has changed before, we need to turn that selection off.
@@ -181,7 +181,7 @@ public class PlayerInventory : MonoBehaviour
 
         //Let's assume E is Inventory button, because it usually is.... //setting to P for testing as E is the interact key so it conflicts
 
-        if (Input.GetKeyDown(KeyCode.P))
+        if (InputHandler.Instance.InventoryOpenTriggered)
         {
 
             if (fullInventory != null && !CraftingUI.activeSelf)
@@ -200,7 +200,8 @@ public class PlayerInventory : MonoBehaviour
 
         }
 
-        if (Input.GetKeyDown(KeyCode.Q) ){
+        //Weird disabling hotbar code idk
+        if (InputHandler.Instance.CraftingTriggered) {
             if (CraftingUI != null && !fullInventory.activeSelf){
                  bool isActive = CraftingUI.activeSelf;
 
@@ -220,7 +221,7 @@ public class PlayerInventory : MonoBehaviour
 
         }
         
-        if (Input.GetKeyDown(KeyCode.E))
+        if (InputHandler.Instance.InteractTriggered)
         {
             UseSelectedItem();
         }

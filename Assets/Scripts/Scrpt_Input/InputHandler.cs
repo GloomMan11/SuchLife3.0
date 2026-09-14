@@ -1,3 +1,4 @@
+using Unity.GraphToolkit.Editor.GraphVisualization;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -32,6 +33,12 @@ public class InputHandler : MonoBehaviour
     private string interact = "Interact";
     [SerializeField]
     private string escape = "Escape";
+    [SerializeField]
+    private string inventoryOpen = "Inventory";
+    [SerializeField]
+    private string crafting = "Crafting";
+    [SerializeField]
+    private string inventoryHotKey = "InventoryHotKey";
 
     [Header("Devices")]
     [SerializeField]
@@ -45,6 +52,10 @@ public class InputHandler : MonoBehaviour
     private InputAction nextAction;
     private InputAction interactAction;
     private InputAction escapeAction;
+    private InputAction inventoryOpenAction;
+    private InputAction craftingAction;
+
+    private InputAction[] inventoryAction = new InputAction[10];
 
     public Vector2 MoveInput { get; private set; }
     public float SprintValue { get; private set; }
@@ -54,17 +65,22 @@ public class InputHandler : MonoBehaviour
     public bool NextTriggered { get; private set; }
     public bool InteractTriggered { get; private set; }
     public bool EscapeTriggered { get; private set; }
-
     public bool IsMouseEnabled { get; private set; }
+    public bool QuickSaveTriggered { get; private set; }
+    public bool InventoryOpenTriggered { get; private set; }
+    public bool CraftingTriggered { get; private set; }
+    public bool[] IsInventoryKey { get; private set; }
     public static InputHandler Instance { get; private set; }
 
     //handling for context-sensitive use; checked against in scripts that perform use-actions with the attack key (or other)
     public enum SelectedContext {None = 0, Tool = 1, Block = 2, Consumable = 3, Weapon = 4}
     static public SelectedContext currSelectedContext { get; private set; }
 
+    private InputActionMap curInputActionMap;
+
     private void Awake()
     {
-
+        IsInventoryKey = new bool[inventoryAction.Length];
 
         if (Instance == null)
         {
@@ -74,24 +90,33 @@ public class InputHandler : MonoBehaviour
         else
         {
             Destroy(gameObject);
-            //Instance.moveAction.Enable();
             return;
         }
 
+        curInputActionMap = playerControls.FindActionMap(actionMapName);
         setUpAllActions();
+    }
+
+    private InputAction GetInputAction(string name) {
+        return curInputActionMap.FindAction(name);
     }
 
     private void setUpAllActions()
     {
-        moveAction = playerControls.FindActionMap(actionMapName).FindAction(move);
-        sprintAction = playerControls.FindActionMap(actionMapName).FindAction(sprint);
-        attackAction = playerControls.FindActionMap(actionMapName).FindAction(attack);
-        placeAction = playerControls.FindActionMap(actionMapName).FindAction(place);
-        previousAction = playerControls.FindActionMap(actionMapName).FindAction(previous);
-        nextAction = playerControls.FindActionMap(actionMapName).FindAction(next);
-        interactAction = playerControls.FindActionMap(actionMapName).FindAction(interact);
-        escapeAction = playerControls.FindActionMap(actionMapName).FindAction(escape);
+        moveAction = GetInputAction(move);
+        sprintAction = GetInputAction(sprint);
+        attackAction = GetInputAction(attack);
+        placeAction = GetInputAction(place);
+        previousAction = GetInputAction(previous);
+        nextAction = GetInputAction(next);
+        interactAction = GetInputAction(interact);
+        escapeAction = GetInputAction(escape);
+        inventoryOpenAction = GetInputAction(inventoryOpen);
+        craftingAction = GetInputAction(crafting);
 
+        for (int i = 0; i < inventoryAction.Length; i++) {
+            inventoryAction[i] = GetInputAction(inventoryHotKey + i.ToString());
+        }
 
         registerInputActions();
 
@@ -108,6 +133,12 @@ public class InputHandler : MonoBehaviour
         nextAction.Enable();
         interactAction.Enable();
         escapeAction.Enable();
+        inventoryOpenAction.Enable();
+        craftingAction.Enable();
+
+        for (int i = 0; i < inventoryAction.Length; i++) {
+            inventoryAction[i].Enable();
+        }
     }
 
     private void OnEnable()
@@ -133,20 +164,15 @@ public class InputHandler : MonoBehaviour
             nextAction.Disable();
             interactAction.Disable();
             escapeAction.Disable();
+            inventoryOpenAction.Disable();
+            craftingAction.Disable();
+
+            for (int i = 0; i < inventoryAction.Length; i++) {
+                inventoryAction[i].Disable();
+            }
 
             InputSystem.onDeviceChange -= onDeviceChange;
             SceneManager.sceneUnloaded -= regenerateActions;
-        }
-    }
-
-
-    private void LateUpdate()
-    {
-
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            Debug.Log("Is Ui Enabled : " + playerControls.FindActionMap("UI").enabled);
-            Debug.Log("Is Player Map Enabled : " + playerControls.FindActionMap(actionMapName).enabled);
         }
     }
 
@@ -178,6 +204,23 @@ public class InputHandler : MonoBehaviour
         escapeAction.performed += context => EscapeTriggered = true;
         escapeAction.canceled += context => EscapeTriggered = false;
 
+        inventoryOpenAction.performed += context => InventoryOpenTriggered = true;
+        inventoryOpenAction.canceled += context => InventoryOpenTriggered = false;
+
+        craftingAction.performed += context => CraftingTriggered = true;
+        craftingAction.canceled += context => CraftingTriggered = false;
+
+        for (int i = 0; i < inventoryAction.Length; i++) {
+            int curIndex = i;
+            inventoryAction[curIndex].performed += context => IsInventoryKey[curIndex] = true;
+            inventoryAction[curIndex].canceled += context => IsInventoryKey[curIndex] = false;
+        }
+
+    }
+
+    private void LateUpdate() {
+        InventoryOpenTriggered = false;
+        CraftingTriggered = false;
     }
 
     private void registerAllInitialDevices()

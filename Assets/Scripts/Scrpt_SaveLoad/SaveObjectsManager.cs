@@ -344,7 +344,7 @@ public class SaveObjectsManager : MonoBehaviour
     {
         autoSaveTime -= Time.deltaTime;
         //Test input to spit something out
-        if (Input.GetKeyDown(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.S)) {
+        if (QuickInputWrapper.GetKeyPress("LeftCtrl") && QuickInputWrapper.GetKeyPress("S")) {
             Debug.Log("Manually saving prefabs");
             SaveAllPrefabData();
             autoSaveTime = MAX_AUTOSAVE_TIME_IN_SECONDS;
