@@ -44,7 +44,10 @@ public class Bomb : Mob
         targets = new List<Transform>();
         blockTilemap = blockTilemap != null ? blockTilemap : GameObject.Find(tileMapName).GetComponent<Tilemap>();
         //pathSetter = GetComponent<AIDestinationSetter>();
-        target = GameObject.Find("Player").transform;
+        //target = GameObject.Find("Player").transform;
+
+        //rework pathfinding to have an 'alert' range instead to handle multiple player objects existing
+
         //pathSetter.target = target;
         objectInScene = gameObject;
         //set starting chunk

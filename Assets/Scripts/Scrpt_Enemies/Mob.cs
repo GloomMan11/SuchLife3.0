@@ -18,8 +18,8 @@ public class Mob : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         //path = GetComponent<AIPath>();  // get AIPath attached to same object
-        if (rb == null)
-            Debug.LogError("Rigidbody2D missing on Mob!");
+        //if (rb == null)
+            //Debug.LogError("Rigidbody2D missing on Mob!"); Some mobs dont need a rigidbody2D (breakable entities); these should probably be restructured though
         //if (path == null)
         //    Debug.LogWarning("AIPath missing on Mob!");
         //set chunk pos on spawn
