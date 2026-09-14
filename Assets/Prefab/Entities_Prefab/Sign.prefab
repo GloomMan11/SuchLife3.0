@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 2721741678293138401}
   - component: {fileID: 3159480595096930901}
   - component: {fileID: 1747345360700155660}
-  - component: {fileID: 7680311940401881249}
+  - component: {fileID: 1354601087153122084}
   m_Layer: 0
   m_Name: Sign
   m_TagString: Untagged
@@ -39,6 +39,7 @@ Transform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &2930242657627566427
 SpriteRenderer:
+  serializedVersion: 3
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -57,6 +58,8 @@ SpriteRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -78,9 +81,11 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 880e0af1224191047973aa9de14ea1b5, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -90,8 +95,8 @@ SpriteRenderer:
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
-  m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+  m_BlendShapeWeights: []
 --- !u!114 &2721741678293138401
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113,7 +118,6 @@ MonoBehaviour:
   onDamageTaken:
     m_PersistentCalls:
       m_Calls: []
-  IFrameLength: 1
 --- !u!114 &3159480595096930901
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -167,7 +171,7 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 1
---- !u!114 &7680311940401881249
+--- !u!114 &1354601087153122084
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -178,7 +182,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec07dd65eaefc824b9eddf7ff4c2872a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: EnemiesAssem::BreakableEntity
 --- !u!1001 &1039652483302165292
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -253,7 +257,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5727577025359119277, guid: 8db0865e60453d84fbcd010a45f38e47, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 5727577025359119277, guid: 8db0865e60453d84fbcd010a45f38e47, type: 3}
       propertyPath: m_LocalRotation.w
