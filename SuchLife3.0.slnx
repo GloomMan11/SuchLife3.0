@@ -23,12 +23,12 @@
   <Project Path="Unity.Multiplayer.Center.Editor.csproj" />
   <Project Path="Unity.TextMeshPro.csproj" />
   <Project Path="Unity.TextMeshPro.Editor.csproj" />
+  <Project Path="PlayerMiscAssem.csproj" />
   <Project Path="LeanTweenAssem.csproj" />
   <Project Path="Unity.Multiplayer.Center.Common.csproj" />
   <Project Path="UnityEditor.UI.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.2D.Editor.Overrides.csproj" />
   <Project Path="Unity.2D.Sprite.Editor.csproj" />
-  <Project Path="PlayerMiscAssem.csproj" />
   <Project Path="DungeonsAssem.csproj" />
   <Project Path="Unity.GraphAuthoring.Editor.csproj" />
   <Project Path="NetworkingAssem.csproj" />
