@@ -14,8 +14,8 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private Animator animator;
 
     private float _lastAttackTime;
-    private bool _isAttacking;
-    public bool IsAttacking => _isAttacking;
+    // private bool _isAttacking;
+    // public bool IsAttacking => _isAttacking;
     private float additiveDamageBoost = 0f;
 
 
@@ -44,7 +44,7 @@ public class PlayerAttack : MonoBehaviour
     private void StartAttack()
     {
         _lastAttackTime = Time.time;
-        _isAttacking = true;
+        // _isAttacking = true;
         
         animator.SetTrigger("Attack");
 
@@ -52,7 +52,7 @@ public class PlayerAttack : MonoBehaviour
     }
     public void EndAttack()
     {
-        _isAttacking = false;
+        // _isAttacking = false;
     }
 
     public void ApplyDamageBoost(float amount, float duration)
