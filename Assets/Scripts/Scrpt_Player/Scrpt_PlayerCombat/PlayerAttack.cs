@@ -12,6 +12,7 @@ public class PlayerAttack : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Animator animator;
+    // [SerializeField] private playerInfo SelfInfo;
 
     [Header("Sword Settings")]
     [SerializeField] private float swordDamageMult = 1.5f;
@@ -34,7 +35,10 @@ public class PlayerAttack : MonoBehaviour
             //if holding a weapon, use that instead
             if (InputHandler.currSelectedContext == InputHandler.SelectedContext.Weapon) 
             {
+                // if (SelfInfo.HeldItem.itemName == "Sword")
+                // {
                 StartSwordAttack();
+                // }
             } else
             {
                 StartAttack();

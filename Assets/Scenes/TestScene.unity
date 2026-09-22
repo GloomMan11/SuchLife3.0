@@ -1000,7 +1000,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
       propertyPath: dropItems.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
       propertyPath: dropItems.Array.data[0].itemPrefab
@@ -42389,6 +42389,91 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 07957e7449e4355459f132500973dcd9, type: 3}
+--- !u!1001 &1861373106
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 10.33
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -7.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 9.9729595
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1290426967446841388, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: dropItems.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: dropItems.Array.data[0].itemPrefab
+      value: 
+      objectReference: {fileID: 7840616202947656859, guid: e4d5d600c5fe1af4e9f16870d4abc6ba, type: 3}
+    - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: dropItems.Array.data[1].itemPrefab
+      value: 
+      objectReference: {fileID: 7840616202947656859, guid: e4d5d600c5fe1af4e9f16870d4abc6ba, type: 3}
+    - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: dropItems.Array.data[0].maxQuantity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: dropItems.Array.data[0].minQuantity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7263654935195719020, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: m_Name
+      value: Crate (1)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: f897f59d5838c684387751f01542054d, type: 3}
 --- !u!58 &1943104383 stripped
 CircleCollider2D:
   m_CorrespondingSourceObject: {fileID: 5283234298430202359, guid: 6e28442da32ba524e894925bba80cc0c, type: 3}
@@ -42773,3 +42858,4 @@ SceneRoots:
   - {fileID: 1330200884}
   - {fileID: 5070852342077511138}
   - {fileID: 250474169}
+  - {fileID: 1861373106}
