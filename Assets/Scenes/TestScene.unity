@@ -1000,12 +1000,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
       propertyPath: dropItems.Array.size
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
       propertyPath: dropItems.Array.data[0].itemPrefab
       value: 
       objectReference: {fileID: 5149180284610993495, guid: 2643171e8d838964ea31eeb4ba7bde81, type: 3}
+    - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
+      propertyPath: dropItems.Array.data[1].itemPrefab
+      value: 
+      objectReference: {fileID: 7840616202947656859, guid: e4d5d600c5fe1af4e9f16870d4abc6ba, type: 3}
     - target: {fileID: 6258266300033474545, guid: f897f59d5838c684387751f01542054d, type: 3}
       propertyPath: dropItems.Array.data[0].maxQuantity
       value: 1

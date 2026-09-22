@@ -4,7 +4,7 @@ using UnityEngine;
 public class PlayerAttack : MonoBehaviour
 {
     [Header("Attack Settings")]
-    [SerializeField] private float attackRange = 2f;
+    [SerializeField] private float attackRange = 0.5f;
     [SerializeField] private int attackDamage = 20;
     [SerializeField] private float attackCooldown = 1f;
     [SerializeField] private LayerMask enemyLayer;
@@ -18,8 +18,6 @@ public class PlayerAttack : MonoBehaviour
     
     
     private float _lastAttackTime;
-    // private bool _isAttacking;
-    // public bool IsAttacking => _isAttacking;
     private float additiveDamageBoost = 0f;
 
 
@@ -48,19 +46,21 @@ public class PlayerAttack : MonoBehaviour
     private void StartAttack()
     {
         _lastAttackTime = Time.time;
-        // _isAttacking = true;
         
         animator.SetTrigger("Attack");
 
        Invoke("DetectHits", 0.5f);
     }
 
-    public void EndAttack() {}
+    public void EndAttack() 
+    {
+
+    }
 
     private void StartSwordAttack()
     {
         _lastAttackTime = Time.time;
-        animator.SetTrigger("Attack");
+        animator.SetTrigger("Sword");
         Invoke("DetectSwordHits", 0.5f);
     }
 
