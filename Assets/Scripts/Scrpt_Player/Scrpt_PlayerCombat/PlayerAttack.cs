@@ -13,6 +13,10 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Animator animator;
 
+    [Header("Sword Settings")]
+    [SerializeField] private float swordDamageMult = 1.5f;
+    
+    
     private float _lastAttackTime;
     // private bool _isAttacking;
     // public bool IsAttacking => _isAttacking;
@@ -32,7 +36,7 @@ public class PlayerAttack : MonoBehaviour
             //if holding a weapon, use that instead
             if (InputHandler.currSelectedContext == InputHandler.SelectedContext.Weapon) 
             {
-                //look at item name
+                StartSwordAttack();
             } else
             {
                 StartAttack();
@@ -50,9 +54,14 @@ public class PlayerAttack : MonoBehaviour
 
        Invoke("DetectHits", 0.5f);
     }
-    public void EndAttack()
+
+    public void EndAttack() {}
+
+    private void StartSwordAttack()
     {
-        // _isAttacking = false;
+        _lastAttackTime = Time.time;
+        animator.SetTrigger("Attack");
+        Invoke("DetectSwordHits", 0.5f);
     }
 
     public void ApplyDamageBoost(float amount, float duration)
@@ -75,6 +84,22 @@ public class PlayerAttack : MonoBehaviour
             attackRange
         );
 
+        ApplyHits(hitEnemies, attackDamage);
+    }
+
+    private void DetectSwordHits()
+    {
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(
+            attackPoint.position, 
+            attackRange + 1
+        );
+
+        int swordDamage = Mathf.RoundToInt(attackDamage * swordDamageMult);
+        ApplyHits(hitEnemies, swordDamage);
+    }
+
+    private void ApplyHits(Collider2D[] hitEnemies, int baseDamage)
+    {
         foreach (Collider2D enemy in hitEnemies)
         {
             // ignore triggers and non-enemy layers
@@ -84,7 +109,7 @@ public class PlayerAttack : MonoBehaviour
             {
                 if (enemy.TryGetComponent<Health>(out var health))
                 {
-                    int boostedDamage = Mathf.RoundToInt(attackDamage + additiveDamageBoost);
+                    int boostedDamage = Mathf.RoundToInt(baseDamage + additiveDamageBoost);
                     health.TakeDamage(boostedDamage, true, gameObject);
                 }
                 //apply a knockback force to the mob
