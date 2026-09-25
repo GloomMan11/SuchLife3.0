@@ -12,15 +12,32 @@ public class PlayerAttack : MonoBehaviour
     [Header("References")]
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Animator animator;
-    // [SerializeField] private playerInfo SelfInfo;
+    [SerializeField] private PlayerInfo SelfInfo;
 
     [Header("Sword Settings")]
     [SerializeField] private float swordDamageMult = 1.5f;
     
+    [Header("Crossbow Settings")]
+    [SerializeField] private float crossbowOffset; // Default for weapon facing up = -90
+    [SerializeField] private GameObject crossbowProjectile;
+    [SerializeField] private Transform crossbowShotPoint;
+    [SerializeField] private float timeToFullCharge = 1f;
+    [SerializeField] private Sprite idleSprite;
+    [SerializeField] private Sprite chargingSprite;
+    [SerializeField] private Sprite chargedSprite;
     
     private float _lastAttackTime;
     private float additiveDamageBoost = 0f;
 
+    private float holdStartTime;
+    private bool isHolding;
+    private bool isCharged;
+    private SpriteRenderer sr;
+
+    private void Awake()
+    {
+        sr = GameObject.Find("ViewInHand").GetComponent<SpriteRenderer>();
+    }
 
     private void Update()
     {
@@ -30,21 +47,87 @@ public class PlayerAttack : MonoBehaviour
             return;
         }
 
+        bool holdingWeapon = InputHandler.currSelectedContext == InputHandler.SelectedContext.Weapon
+                              && SelfInfo.HeldItem is Weapon;
+
+        // Crossbow charge/rotation must run every frame while held, regardless of the IsAttacking/cooldown gate
+        if (holdingWeapon && ((Weapon)SelfInfo.HeldItem).AnimationType == 3)
+        {
+            HandleCrossbowCharging();
+        }
+
         if (InputHandler.Instance.IsAttacking && Time.time >= _lastAttackTime + attackCooldown)
         {
             //if holding a weapon, use that instead
-            if (InputHandler.currSelectedContext == InputHandler.SelectedContext.Weapon) 
+            if (holdingWeapon)
             {
-                // if (SelfInfo.HeldItem.itemName == "Sword")
-                // {
-                StartSwordAttack();
-                // }
-            } else
+                Weapon weapon = (Weapon)SelfInfo.HeldItem;
+                switch (weapon.AnimationType)
+                {
+                    case 1: StartSwordAttack(); break; // swing
+                    // case 2: StartStabAttack(); break;
+                    case 3: StartShootAttack(); break; // shoot
+                    default: StartAttack(); break;
+                }
+            } 
+            else
             {
                 StartAttack();
 
             }
         }
+    }
+
+    private void HandleCrossbowCharging()
+    {
+        // Rotate weapon to follow mouse cursor
+        Vector3 difference = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+        float rotZ = Mathf.Atan2(difference.y, difference.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(0f, 0f, rotZ + crossbowOffset);
+
+        if (Input.GetMouseButtonDown(0) && !isCharged)
+        {
+            isHolding = true;
+            holdStartTime = Time.time;
+            if (sr && idleSprite) sr.sprite = idleSprite;
+        }
+
+        if (Input.GetMouseButton(0) && isHolding)
+        {
+            float held = Time.time - holdStartTime;
+
+            if (held >= timeToFullCharge)
+            {
+                isCharged = true;
+                if (sr && chargedSprite) sr.sprite = chargedSprite;
+            }
+            else if (held >= timeToFullCharge * 0.5f)
+            {
+                if (sr && chargingSprite) sr.sprite = chargingSprite;
+            }
+            else
+            {
+                if (sr && idleSprite) sr.sprite = idleSprite;
+            }
+        }
+
+        if (Input.GetMouseButtonUp(0) && isHolding)
+        {
+            isHolding = false;
+            if (!isCharged && sr && idleSprite) sr.sprite = idleSprite;
+        }
+    }
+
+    private void StartShootAttack()
+    {
+        if (!isCharged) return; // not ready to fire yet
+
+        _lastAttackTime = Time.time;
+        Instantiate(crossbowProjectile, crossbowShotPoint.position, transform.rotation);
+
+        isCharged = false;
+        isHolding = false;
+        if (sr && idleSprite) sr.sprite = idleSprite;
     }
 
     private void StartAttack()

@@ -2697,7 +2697,15 @@ MonoBehaviour:
     m_Bits: 0
   attackPoint: {fileID: 4594878179627465961}
   animator: {fileID: 3422614386554052806}
+  SelfInfo: {fileID: 7788973252339243208}
   swordDamageMult: 1.5
+  crossbowOffset: 0
+  crossbowProjectile: {fileID: 5922004877681328416, guid: 58bdeeb4478b0458890775dd2d9b8cb4, type: 3}
+  crossbowShotPoint: {fileID: 4594878179627465961}
+  timeToFullCharge: 1
+  idleSprite: {fileID: -6337030637045467450, guid: b03f95bcc95f44ec68ef0ec2f0b73356, type: 3}
+  chargingSprite: {fileID: -6337030637045467450, guid: b03f95bcc95f44ec68ef0ec2f0b73356, type: 3}
+  chargedSprite: {fileID: -5394934336488586490, guid: 94b96d7bfc1e84d32b3a283ba1c6bc3c, type: 3}
 --- !u!114 &3057467759802501850
 MonoBehaviour:
   m_ObjectHideFlags: 0
