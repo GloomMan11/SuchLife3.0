@@ -65,7 +65,7 @@ public class PlayerAttack : MonoBehaviour
                 switch (weapon.AnimationType)
                 {
                     case 1: StartSwordAttack(); break; // swing
-                    // case 2: StartStabAttack(); break;
+                    case 2: StartStabAttack(); break;
                     case 3: StartShootAttack(); break; // shoot
                     default: StartAttack(); break;
                 }
@@ -118,6 +118,20 @@ public class PlayerAttack : MonoBehaviour
         }
     }
 
+    private void StartSwordAttack()
+    {
+        _lastAttackTime = Time.time;
+        animator.SetTrigger("Sword");
+        Invoke("DetectSwordHits", 0.5f);
+    }
+
+    private void StartStabAttack()
+    {
+        _lastAttackTime = Time.time;
+        animator.SetTrigger("Spear");
+        Invoke("DetectSpearHits", 0.5f);
+    }
+
     private void StartShootAttack()
     {
         if (!isCharged) return; // not ready to fire yet
@@ -144,12 +158,7 @@ public class PlayerAttack : MonoBehaviour
 
     }
 
-    private void StartSwordAttack()
-    {
-        _lastAttackTime = Time.time;
-        animator.SetTrigger("Sword");
-        Invoke("DetectSwordHits", 0.5f);
-    }
+    
 
     public void ApplyDamageBoost(float amount, float duration)
     {
@@ -183,6 +192,17 @@ public class PlayerAttack : MonoBehaviour
 
         int swordDamage = Mathf.RoundToInt(attackDamage * swordDamageMult);
         ApplyHits(hitEnemies, swordDamage);
+    }
+
+    private void DetectSpearHits()
+    {
+        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(
+            attackPoint.position,
+            attackRange + 2
+        );
+
+        int spearDamage = Mathf.RoundToInt(attackDamage * swordDamageMult);
+        ApplyHits(hitEnemies, spearDamage);
     }
 
     private void ApplyHits(Collider2D[] hitEnemies, int baseDamage)

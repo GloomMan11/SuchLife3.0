@@ -18,4 +18,4 @@ MonoBehaviour:
   tileThisPlaces: {fileID: 0}
   information: []
   DamageMult: 1.5
-  AnimationType: 1
+  AnimationType: 2
