@@ -25,7 +25,7 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private Sprite idleSprite;
     [SerializeField] private Sprite chargingSprite;
     [SerializeField] private Sprite chargedSprite;
-    
+
     private float _lastAttackTime;
     private float additiveDamageBoost = 0f;
 
@@ -85,14 +85,14 @@ public class PlayerAttack : MonoBehaviour
         float rotZ = Mathf.Atan2(difference.y, difference.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0f, 0f, rotZ + crossbowOffset);
 
-        if (Input.GetMouseButtonDown(0) && !isCharged)
+        if (Input.GetMouseButtonDown(1) && !isCharged)
         {
             isHolding = true;
             holdStartTime = Time.time;
             if (sr && idleSprite) sr.sprite = idleSprite;
         }
 
-        if (Input.GetMouseButton(0) && isHolding)
+        if (Input.GetMouseButton(1) && isHolding && !isCharged)
         {
             float held = Time.time - holdStartTime;
 
@@ -111,7 +111,7 @@ public class PlayerAttack : MonoBehaviour
             }
         }
 
-        if (Input.GetMouseButtonUp(0) && isHolding)
+        if (Input.GetMouseButtonUp(1) && isHolding && !isCharged)
         {
             isHolding = false;
             if (!isCharged && sr && idleSprite) sr.sprite = idleSprite;
@@ -137,7 +137,7 @@ public class PlayerAttack : MonoBehaviour
         if (!isCharged) return; // not ready to fire yet
 
         _lastAttackTime = Time.time;
-        Instantiate(crossbowProjectile, crossbowShotPoint.position, transform.rotation);
+        Instantiate(crossbowProjectile, crossbowShotPoint.position, transform.rotation * Quaternion.Euler(0f, 0f, 180f));
 
         isCharged = false;
         isHolding = false;
@@ -157,8 +157,6 @@ public class PlayerAttack : MonoBehaviour
     {
 
     }
-
-    
 
     public void ApplyDamageBoost(float amount, float duration)
     {

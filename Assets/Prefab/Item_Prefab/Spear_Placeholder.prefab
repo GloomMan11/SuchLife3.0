@@ -10,9 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 7724799550651508209}
   - component: {fileID: 7980673757183941656}
-  - component: {fileID: -540642480317141042}
+  - component: {fileID: -1505636114074836460}
+  - component: {fileID: 7000595985071554041}
   m_Layer: 0
-  m_Name: arrow_0
+  m_Name: Spear_Placeholder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -28,7 +29,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.63, y: 0.63, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -82,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7349563376270216815, guid: 6638252ccebcb47ad9b1a23c5a5a3e55, type: 3}
+  m_Sprite: {fileID: 5607166978469913552, guid: 7f222eac214041b43b97f06df0b91404, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -93,7 +94,43 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
---- !u!114 &-540642480317141042
+--- !u!58 &-1505636114074836460
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7840616202947656859}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_Radius: 0.5
+--- !u!114 &7000595985071554041
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -102,15 +139,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 7840616202947656859}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1aad5a16f59e45b39a9ff3050f2ad0c, type: 3}
+  m_Script: {fileID: 11500000, guid: 0aa3cab92e9e5bd46a75374b698f9c14, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 10
-  lifeTime: 5
-  distance: 0.4
-  damage: 30
-  whatIsSolid:
-    serializedVersion: 2
-    m_Bits: 384
-  destroyEffectEnemy: {fileID: 5922004877681328416, guid: 58bdeeb4478b0458890775dd2d9b8cb4, type: 3}
-  destroyEffectWall: {fileID: 5922004877681328416, guid: 47a8e729520da4826ac8f85e976826d0, type: 3}
+  m_EditorClassIdentifier: Assembly-CSharp::Pickup
+  itemData: {fileID: 11400000, guid: 8dc68e0c7ce0b6a46bfd4d2a0c1dc9f8, type: 2}
+  pullRadius: 2
+  pickupRadius: 0.3
+  moveSpeed: 10
