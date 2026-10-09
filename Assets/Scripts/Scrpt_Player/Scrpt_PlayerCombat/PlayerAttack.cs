@@ -206,7 +206,6 @@ public class PlayerAttack : MonoBehaviour
 
     private void ApplyHits(Collider2D[] hitEnemies, int baseDamage)
     {
-        int i = 1;
         foreach (Collider2D enemy in hitEnemies)
         {
             // ignore triggers and non-enemy layers
@@ -214,6 +213,11 @@ public class PlayerAttack : MonoBehaviour
             //only attack living entities
             if (enemy.TryGetComponent<Mob>(out var mob))
             {
+                if (IsBlockedByWall(enemy))
+                {
+                    continue;
+                }
+
                 if (enemy.TryGetComponent<Health>(out var health))
                 {
                     int boostedDamage = Mathf.RoundToInt(baseDamage + additiveDamageBoost);
@@ -227,14 +231,22 @@ public class PlayerAttack : MonoBehaviour
                 Vector2 knockbackVector = knockbackDir * knockbackForce;
                 mob.applyKnockback(knockbackVector, knockbackForce);
                 //Debug.Log(knockbackVector);
-            }
-            else if (enemy.CompareTag("PlaceTileMap"))
-            {
-            } 
-           
-            i ++;
-            Debug.LogWarning(i + enemy.name);      
+            }     
         }
+    }
+
+    private bool IsBlockedByWall(Collider2D target)
+    {
+        Vector2 origin = transform.position;
+        Vector2 targetPoint = target.ClosestPoint(origin);
+
+        RaycastHit2D[] hits = Physics2D.LinecastAll(origin, targetPoint);
+        foreach (RaycastHit2D hit in hits)
+        {
+            if (hit.collider.isTrigger) continue;
+            if (hit.collider.CompareTag("PlaceTileMap")) return true;
+        }
+        return false;
     }
 
     private void OnDrawGizmosSelected()
