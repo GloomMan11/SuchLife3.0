@@ -14,8 +14,8 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private Animator animator;
     [SerializeField] private PlayerInfo SelfInfo;
 
-    [Header("Sword Settings")]
-    [SerializeField] private float swordDamageMult = 1.5f;
+    [Header("Sword/Spear Settings")]
+    [SerializeField] private float damageMult = 1.5f;
     
     [Header("Crossbow Settings")]
     [SerializeField] private float crossbowOffset; // Default for weapon facing up = -90
@@ -62,6 +62,7 @@ public class PlayerAttack : MonoBehaviour
             if (holdingWeapon)
             {
                 Weapon weapon = (Weapon)SelfInfo.HeldItem;
+                damageMult = weapon.DamageMult;
                 switch (weapon.AnimationType)
                 {
                     case 1: StartSwordAttack(); break; // swing
@@ -188,7 +189,7 @@ public class PlayerAttack : MonoBehaviour
             attackRange + 1
         );
 
-        int swordDamage = Mathf.RoundToInt(attackDamage * swordDamageMult);
+        int swordDamage = Mathf.RoundToInt(attackDamage * damageMult);
         ApplyHits(hitEnemies, swordDamage);
     }
 
@@ -199,12 +200,13 @@ public class PlayerAttack : MonoBehaviour
             attackRange + 2
         );
 
-        int spearDamage = Mathf.RoundToInt(attackDamage * swordDamageMult);
+        int spearDamage = Mathf.RoundToInt(attackDamage * damageMult);
         ApplyHits(hitEnemies, spearDamage);
     }
 
     private void ApplyHits(Collider2D[] hitEnemies, int baseDamage)
     {
+        int i = 1;
         foreach (Collider2D enemy in hitEnemies)
         {
             // ignore triggers and non-enemy layers
@@ -217,15 +219,21 @@ public class PlayerAttack : MonoBehaviour
                     int boostedDamage = Mathf.RoundToInt(baseDamage + additiveDamageBoost);
                     health.TakeDamage(boostedDamage, true, gameObject);
                 }
+                
                 //apply a knockback force to the mob
                 //read force from some value associated with the attack or weapon
                 float knockbackForce = 10f;
                 Vector2 knockbackDir = (enemy.transform.position - transform.position).normalized;
                 Vector2 knockbackVector = knockbackDir * knockbackForce;
                 mob.applyKnockback(knockbackVector, knockbackForce);
-                //Debug.Log("push");
                 //Debug.Log(knockbackVector);
-            }         
+            }
+            else if (enemy.CompareTag("PlaceTileMap"))
+            {
+            } 
+           
+            i ++;
+            Debug.LogWarning(i + enemy.name);      
         }
     }
 

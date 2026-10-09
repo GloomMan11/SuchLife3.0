@@ -17,5 +17,5 @@ MonoBehaviour:
   icon: {fileID: 5607166978469913552, guid: 7f222eac214041b43b97f06df0b91404, type: 3}
   tileThisPlaces: {fileID: 0}
   information: []
-  DamageMult: 1.5
+  DamageMult: 1.3
   AnimationType: 2
