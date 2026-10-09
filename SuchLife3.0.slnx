@@ -24,7 +24,6 @@
   <Project Path="Unity.TextMeshPro.csproj" />
   <Project Path="Unity.TextMeshPro.Editor.csproj" />
   <Project Path="PlayerMiscAssem.csproj" />
-  <Project Path="LeanTweenAssem.csproj" />
   <Project Path="Unity.Multiplayer.Center.Common.csproj" />
   <Project Path="UnityEditor.UI.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.2D.Editor.Overrides.csproj" />
@@ -34,7 +33,6 @@
   <Project Path="NetworkingAssem.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.Shared.csproj" />
   <Project Path="EntityBaseAssem.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Editor.Shared.csproj" />
   <Project Path="Unity.Collections.CodeGen.csproj" />
   <Project Path="UnityEditor.UI.Analytics.csproj" />
@@ -49,16 +47,17 @@
   <Project Path="ServerJoinCreatorAssem.csproj" />
   <Project Path="Unity.SurfaceCache.Runtime.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.RenderPipelines.Core.Runtime.Shared.csproj" />
-  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Unity.Collections.Tests.CoreCLR.InternalJobNestedPrivate.csproj" />
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.ObjectDispatcher.Runtime.csproj" />
   <Project Path="BlockIteractionAssem.csproj" />
   <Project Path="EnemiesAssem.csproj" />
   <Project Path="PlayerInventoryAssem.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="ChunkAssem.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.RenderPipelines.Core.Editor.csproj" />
   <Project Path="Unity.InternalAPIEngineBridge.004.csproj" />
+  <Project Path="LeanTweenAssem.csproj" />
   <Project Path="CraftingAssem.csproj" />
   <Project Path="TileMapHelperAssem.csproj" />
   <Project Path="Unity.Collections.Tests.CoreCLR.PublicJobPrivateGeneric.csproj" />
@@ -68,6 +67,7 @@
   <Project Path="HealthAssem.csproj" />
   <Project Path="Unity.InternalAPIEditorBridge.ShaderGraph.Editor.csproj" />
   <Project Path="PauseTimeAssem.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="WorldCreatorAssem.csproj" />
   <Project Path="MathHelperFunctAssem.csproj" />
   <Project Path="Unity.Collections.Tests.CoreCLR.PrivateJobNested.csproj" />

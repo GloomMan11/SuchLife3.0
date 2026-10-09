@@ -14,7 +14,7 @@ public class PlayerInfo : MonoBehaviour
     private Item _heldItem;
     public int heldItemIndex = 0;
     //public PlayerItemHoldView heldItemView;
-    [SerializeField] SpriteRenderer currentlyHeld; //currently held item
+    [SerializeField] GameObject currentlyHeld; //currently held item
 
     public Item CurrentlyHeldItem;
 
@@ -50,13 +50,18 @@ public class PlayerInfo : MonoBehaviour
         //switch rotation when that gets added
         if (newItem != null)
         {
-            currentlyHeld.sprite = CurrentlyHeldItem.icon;
+            currentlyHeld.GetComponent<SpriteRenderer>().sprite = CurrentlyHeldItem.icon;
         }
         else
         {
-            currentlyHeld.sprite = null;
+            currentlyHeld.GetComponent<SpriteRenderer>().sprite = null;
         }
     }
 
+
+    public void Update()
+    {
+        currentlyHeld.GetComponent<Transform>().Rotate(new Vector3(0, 0, 1), 90 * Time.deltaTime);
+    }
 
 }
