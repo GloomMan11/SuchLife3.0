@@ -18,6 +18,11 @@ public class PlayerInfo : MonoBehaviour
 
     public Item CurrentlyHeldItem;
 
+    private float currentAngle;
+    private float angleVelocity;
+    private float defaultLocalAngle;
+    public bool isAnimated = false;
+
     //Unique behavior of NOT being replicated between clients
     //Server grabs GUID from a tcp request but never shares it to other clients
     public Guid playerGuid;
@@ -25,6 +30,9 @@ public class PlayerInfo : MonoBehaviour
     private void Start()
     {
         Player = gameObject;
+        Transform held = currentlyHeld.transform;
+        currentAngle = held.eulerAngles.z;
+        defaultLocalAngle = held.localEulerAngles.z; // resting angle from the prefab
         //heldItemView = GameObject.Find("ViewInHand").GetComponent<PlayerItemHoldView>();
     }
     public Item HeldItem
@@ -61,7 +69,31 @@ public class PlayerInfo : MonoBehaviour
 
     public void Update()
     {
-        currentlyHeld.GetComponent<Transform>().Rotate(new Vector3(0, 0, 1), 90 * Time.deltaTime);
-    }
+        if (CurrentlyHeldItem == null)
+        {
+            return;
+        }
 
+        Transform held = currentlyHeld.transform;
+        float targetAngle;
+
+        if (CurrentlyHeldItem.useFlag == 4 && !isAnimated)
+        {
+            Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 dir = mouseWorld - held.position;
+            targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+
+            currentAngle = Mathf.SmoothDampAngle(currentAngle, targetAngle, ref angleVelocity, 0.3f);
+            held.rotation = Quaternion.Euler(0f, 0f, currentAngle);
+        }
+        else if (CurrentlyHeldItem.useFlag == 4)
+        {
+            held.rotation = Quaternion.Euler(0f, 0f, currentAngle);
+        }
+        else
+        {
+            // Resting angle, relative to the player's orientation
+            held.localRotation = new Quaternion (0, 0, 180f, 0);
+        }
+    }
 }

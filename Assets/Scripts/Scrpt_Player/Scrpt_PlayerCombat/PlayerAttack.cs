@@ -121,6 +121,7 @@ public class PlayerAttack : MonoBehaviour
 
     private void StartSwordAttack()
     {
+        SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
         animator.SetTrigger("Sword");
         Invoke("DetectSwordHits", 0.5f);
@@ -128,6 +129,7 @@ public class PlayerAttack : MonoBehaviour
 
     private void StartStabAttack()
     {
+        SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
         animator.SetTrigger("Spear");
         Invoke("DetectSpearHits", 0.5f);
@@ -147,11 +149,12 @@ public class PlayerAttack : MonoBehaviour
 
     private void StartAttack()
     {
+        SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
         
         animator.SetTrigger("Attack");
 
-       Invoke("DetectHits", 0.5f);
+        Invoke("DetectHits", 0.5f);
     }
 
     public void EndAttack() 
@@ -233,6 +236,7 @@ public class PlayerAttack : MonoBehaviour
                 //Debug.Log(knockbackVector);
             }     
         }
+        SelfInfo.isAnimated = false;
     }
 
     private bool IsBlockedByWall(Collider2D target)
