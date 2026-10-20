@@ -18,10 +18,13 @@ public class PlayerInfo : MonoBehaviour
 
     public Item CurrentlyHeldItem;
 
+    //used to make weapons rotate towards the mouse slightly
     private float currentAngle;
     private float angleVelocity;
     private float defaultLocalAngle;
     public bool isAnimated = false;
+    [SerializeField] private float maxTiltAngle = 10f;
+    [SerializeField] private float restLocalAngle = 180f;
 
     //Unique behavior of NOT being replicated between clients
     //Server grabs GUID from a tcp request but never shares it to other clients
@@ -75,15 +78,19 @@ public class PlayerInfo : MonoBehaviour
         }
 
         Transform held = currentlyHeld.transform;
-        float targetAngle;
+        float parentAngle = held.parent != null ? held.parent.eulerAngles.z : 0f;
+        float restAngle = parentAngle + restLocalAngle;
 
         if (CurrentlyHeldItem.useFlag == 4 && !isAnimated)
         {
             Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2 dir = mouseWorld - held.position;
-            targetAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+            float mouseAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
 
-            currentAngle = Mathf.SmoothDampAngle(currentAngle, targetAngle, ref angleVelocity, 0.3f);
+            float offsetFromRest = Mathf.DeltaAngle(restAngle, mouseAngle);
+            float targetAngle = restAngle + Mathf.Clamp(offsetFromRest, -maxTiltAngle, maxTiltAngle);
+            
+            currentAngle = Mathf.SmoothDampAngle(currentAngle, targetAngle, ref angleVelocity, 0.05f);
             held.rotation = Quaternion.Euler(0f, 0f, currentAngle);
         }
         else if (CurrentlyHeldItem.useFlag == 4)
@@ -93,7 +100,9 @@ public class PlayerInfo : MonoBehaviour
         else
         {
             // Resting angle, relative to the player's orientation
-            held.localRotation = new Quaternion (0, 0, 180f, 0);
+            held.localRotation = Quaternion.Euler(0, 0, restLocalAngle);
+            currentAngle = restAngle;
+            angleVelocity = 0f;
         }
     }
 }

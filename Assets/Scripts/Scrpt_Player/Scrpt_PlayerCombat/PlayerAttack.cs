@@ -18,13 +18,20 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float damageMult = 1.5f;
     
     [Header("Crossbow Settings")]
-    [SerializeField] private float crossbowOffset; // Default for weapon facing up = -90
+    [SerializeField] private float shotSpawnDistance = 0.6f;
     [SerializeField] private GameObject crossbowProjectile;
     [SerializeField] private Transform crossbowShotPoint;
     [SerializeField] private float timeToFullCharge = 1f;
     [SerializeField] private Sprite idleSprite;
     [SerializeField] private Sprite chargingSprite;
     [SerializeField] private Sprite chargedSprite;
+
+    [Header("Aiming")]
+    [SerializeField] private float attackPointDistance = 0.75f;
+    [SerializeField] private float defaultArc = 120f;           // total arc in degrees
+    [SerializeField] private float swordArc = 120f;
+    [SerializeField] private float spearArc = 40f;
+    private Vector2 aimDirection = Vector2.right;
 
     private float _lastAttackTime;
     private float additiveDamageBoost = 0f;
@@ -81,11 +88,6 @@ public class PlayerAttack : MonoBehaviour
 
     private void HandleCrossbowCharging()
     {
-        // Rotate weapon to follow mouse cursor
-        Vector3 difference = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
-        float rotZ = Mathf.Atan2(difference.y, difference.x) * Mathf.Rad2Deg;
-        transform.rotation = Quaternion.Euler(0f, 0f, rotZ + crossbowOffset);
-
         if (Input.GetMouseButtonDown(1) && !isCharged)
         {
             isHolding = true;
@@ -115,12 +117,13 @@ public class PlayerAttack : MonoBehaviour
         if (Input.GetMouseButtonUp(1) && isHolding && !isCharged)
         {
             isHolding = false;
-            if (!isCharged && sr && idleSprite) sr.sprite = idleSprite;
+            if (sr && idleSprite) sr.sprite = idleSprite;
         }
     }
 
     private void StartSwordAttack()
     {
+        aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
         animator.SetTrigger("Sword");
@@ -129,6 +132,7 @@ public class PlayerAttack : MonoBehaviour
 
     private void StartStabAttack()
     {
+        aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
         animator.SetTrigger("Spear");
@@ -140,7 +144,13 @@ public class PlayerAttack : MonoBehaviour
         if (!isCharged) return; // not ready to fire yet
 
         _lastAttackTime = Time.time;
-        Instantiate(crossbowProjectile, crossbowShotPoint.position, transform.rotation * Quaternion.Euler(0f, 0f, 180f));
+        
+        Vector2 dir = GetDirectionToMouse(transform.position);
+        float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+        Vector2 spawnPos = (Vector2)crossbowShotPoint.position + dir * shotSpawnDistance;
+
+        Instantiate(crossbowProjectile, spawnPos, Quaternion.Euler(0f, 0f, angle - 90f));
 
         isCharged = false;
         isHolding = false;
@@ -149,11 +159,10 @@ public class PlayerAttack : MonoBehaviour
 
     private void StartAttack()
     {
+        aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
-        
         animator.SetTrigger("Attack");
-
         Invoke("DetectHits", 0.5f);
     }
 
@@ -258,5 +267,12 @@ public class PlayerAttack : MonoBehaviour
         if (attackPoint == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+    }
+
+    private Vector2 GetDirectionToMouse(Vector2 from)
+    {
+        Vector2 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 dir = mouseWorld - from;
+        return dir.sqrMagnitude > 0.0001f ? dir.normalized : aimDirection;
     }
 }
