@@ -1,5 +1,8 @@
 using Unity.VisualScripting;
 using UnityEngine;
+using System.Collections.Generic;
+using System;
+using System.Collections;
 
 public class PlayerAttack : MonoBehaviour
 {
@@ -25,6 +28,9 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private Sprite idleSprite;
     [SerializeField] private Sprite chargingSprite;
     [SerializeField] private Sprite chargedSprite;
+    private float holdStartTime;
+    private bool isHolding;
+    private bool isCharged;
 
     [Header("Aiming")]
     [SerializeField] private float attackPointDistance = 0.75f;
@@ -33,12 +39,14 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private float spearArc = 40f;
     private Vector2 aimDirection = Vector2.right;
 
+    [Header("Detecting hits")]
+    private HashSet<Collider2D> alreadyHit = new HashSet<Collider2D>(); 
+    private bool DetectingHits;
+    private Collider2D[] hitObjects = new Collider2D[10];
+
+
     private float _lastAttackTime;
     private float additiveDamageBoost = 0f;
-
-    private float holdStartTime;
-    private bool isHolding;
-    private bool isCharged;
     private SpriteRenderer sr;
 
     private void Awake()
@@ -123,20 +131,28 @@ public class PlayerAttack : MonoBehaviour
 
     private void StartSwordAttack()
     {
+        if (DetectingHits) 
+        {
+            return;
+        }
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
         animator.SetTrigger("Sword");
-        Invoke("DetectSwordHits", 0.5f);
+        StartCoroutine(DetectSwordHits());
     }
 
     private void StartStabAttack()
     {
+        if (DetectingHits) 
+        {
+            return;
+        }
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
         animator.SetTrigger("Spear");
-        Invoke("DetectSpearHits", 0.5f);
+        StartCoroutine(DetectSpearHits());
     }
 
     private void StartShootAttack()
@@ -159,11 +175,15 @@ public class PlayerAttack : MonoBehaviour
 
     private void StartAttack()
     {
+        if (DetectingHits) 
+        {
+            return;
+        }
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
         animator.SetTrigger("Attack");
-        Invoke("DetectHits", 0.5f);
+        StartCoroutine(DetectHits());
     }
 
     public void EndAttack() 
@@ -184,68 +204,116 @@ public class PlayerAttack : MonoBehaviour
         Debug.Log("Damage boost ended.");
     }
 
-    private void DetectHits()
+    private IEnumerator DetectHits()
     {
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(
-            attackPoint.position, 
-            attackRange
-        );
+        DetectingHits = true;
+        alreadyHit.Clear();
+        float elapsed = 0f;
 
-        ApplyHits(hitEnemies, attackDamage);
-    }
-
-    private void DetectSwordHits()
-    {
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(
-            attackPoint.position, 
-            attackRange + 1
-        );
-
-        int swordDamage = Mathf.RoundToInt(attackDamage * damageMult);
-        ApplyHits(hitEnemies, swordDamage);
-    }
-
-    private void DetectSpearHits()
-    {
-        Collider2D[] hitEnemies = Physics2D.OverlapCircleAll(
-            attackPoint.position,
-            attackRange + 2
-        );
-
-        int spearDamage = Mathf.RoundToInt(attackDamage * damageMult);
-        ApplyHits(hitEnemies, spearDamage);
-    }
-
-    private void ApplyHits(Collider2D[] hitEnemies, int baseDamage)
-    {
-        foreach (Collider2D enemy in hitEnemies)
+        while (elapsed < 1.0)
         {
-            // ignore triggers and non-enemy layers
-            if (enemy.isTrigger) continue;
-            //only attack living entities
-            if (enemy.TryGetComponent<Mob>(out var mob))
-            {
-                if (IsBlockedByWall(enemy))
-                {
-                    continue;
-                }
+            Vector2 currentPos = attackPoint.position;
+            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
 
-                if (enemy.TryGetComponent<Health>(out var health))
-                {
-                    int boostedDamage = Mathf.RoundToInt(baseDamage + additiveDamageBoost);
-                    health.TakeDamage(boostedDamage, true, gameObject);
-                }
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D hitObject = hitObjects[i];
                 
-                //apply a knockback force to the mob
-                //read force from some value associated with the attack or weapon
-                float knockbackForce = 10f;
-                Vector2 knockbackDir = (enemy.transform.position - transform.position).normalized;
-                Vector2 knockbackVector = knockbackDir * knockbackForce;
-                mob.applyKnockback(knockbackVector, knockbackForce);
-                //Debug.Log(knockbackVector);
-            }     
+                if (!alreadyHit.Contains(hitObject))
+                {
+                    alreadyHit.Add(hitObject);
+                    ApplyHits(hitObject, attackDamage);
+                }
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
         }
-        SelfInfo.isAnimated = false;
+
+        DetectingHits = false;
+    }
+
+    private IEnumerator DetectSwordHits()
+    {
+        DetectingHits = true;
+        alreadyHit.Clear();
+        float elapsed = 0f;
+        int swordDamage = Mathf.RoundToInt(attackDamage * damageMult);
+
+        while (elapsed < 1.0)
+        {
+            Vector2 currentPos = attackPoint.position;
+            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D hitObject = hitObjects[i];
+                
+                if (!alreadyHit.Contains(hitObject))
+                {
+                    alreadyHit.Add(hitObject);
+                    ApplyHits(hitObject, swordDamage);
+                }
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        DetectingHits = false;
+    }
+
+    private IEnumerator DetectSpearHits()
+    {
+        DetectingHits = true;
+        alreadyHit.Clear();
+        float elapsed = 0f;
+        int spearDamage = Mathf.RoundToInt(attackDamage * damageMult);
+
+        while (elapsed < 1.0)
+        {
+            Vector2 currentPos = attackPoint.position;
+            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D hitObject = hitObjects[i];
+                
+                if (!alreadyHit.Contains(hitObject))
+                {
+                    alreadyHit.Add(hitObject);
+                    ApplyHits(hitObject, spearDamage);
+                }
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        DetectingHits = false;
+    }
+
+    private void ApplyHits(Collider2D enemy, int Damage)
+    {
+        if (enemy.TryGetComponent<Mob>(out var mob))
+        {
+            if (IsBlockedByWall(enemy) == true)
+            {
+                return;
+            }
+
+            if (enemy.TryGetComponent<Health>(out var health))
+            {
+                int boostedDamage = Mathf.RoundToInt(Damage + additiveDamageBoost);
+                health.TakeDamage(boostedDamage, true, gameObject);
+            }
+                
+            //apply a knockback force to the mob
+            //read force from some value associated with the attack or weapon
+            float knockbackForce = 10f;
+            Vector2 knockbackDir = (enemy.transform.position - transform.position).normalized;
+            Vector2 knockbackVector = knockbackDir * knockbackForce;
+            mob.applyKnockback(knockbackVector, knockbackForce);
+            //Debug.Log(knockbackVector);
+        }
+        SelfInfo.isAnimated = false;   
     }
 
     private bool IsBlockedByWall(Collider2D target)
