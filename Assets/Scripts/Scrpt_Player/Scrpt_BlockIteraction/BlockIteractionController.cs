@@ -105,7 +105,7 @@ namespace BlockIteraction
                     playerBlockView.SetLookAtObject(drawWhereHit, hitVal, destroyRotation, null, false);
 
                     //only break item when tool is held
-                    if (inputHandler.IsAttacking && destroyingCoolDown <= 0)
+                    if (inputHandler.IsAttackingLeft && destroyingCoolDown <= 0)
                     {
                         destroyingCoolDown = destroyingMinCoolDown;
                         //placeTileMap.SetTile(drawWhereHit, null);

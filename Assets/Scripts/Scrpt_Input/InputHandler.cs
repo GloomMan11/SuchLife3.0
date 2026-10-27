@@ -46,7 +46,7 @@ public class InputHandler : MonoBehaviour
 
     private InputAction moveAction;
     private InputAction sprintAction;
-    private InputAction attackAction;
+    private InputAction attackActionLeft;
     private InputAction placeAction;
     private InputAction previousAction;
     private InputAction nextAction;
@@ -59,7 +59,7 @@ public class InputHandler : MonoBehaviour
 
     public Vector2 MoveInput { get; private set; }
     public float SprintValue { get; private set; }
-    public bool IsAttacking { get; private set; }
+    public bool IsAttackingLeft { get; private set; }
     public bool IsPlacing { get; private set; }
     public bool PreviousTriggered { get; private set; }
     public bool NextTriggered { get; private set; }
@@ -105,7 +105,7 @@ public class InputHandler : MonoBehaviour
     {
         moveAction = GetInputAction(move);
         sprintAction = GetInputAction(sprint);
-        attackAction = GetInputAction(attack);
+        attackActionLeft = GetInputAction(attack);
         placeAction = GetInputAction(place);
         previousAction = GetInputAction(previous);
         nextAction = GetInputAction(next);
@@ -127,7 +127,7 @@ public class InputHandler : MonoBehaviour
     {
         moveAction.Enable();
         sprintAction.Enable();
-        attackAction.Enable();
+        attackActionLeft.Enable();
         placeAction.Enable();
         previousAction.Enable();
         nextAction.Enable();
@@ -158,7 +158,7 @@ public class InputHandler : MonoBehaviour
         {
             moveAction.Disable();
             sprintAction.Disable();
-            attackAction.Disable();
+            attackActionLeft.Disable();
             placeAction.Disable();
             previousAction.Disable();
             nextAction.Disable();
@@ -186,8 +186,8 @@ public class InputHandler : MonoBehaviour
         sprintAction.performed += context => SprintValue = context.ReadValue<float>();
         sprintAction.canceled += context => SprintValue = 0f;
 
-        attackAction.performed += context => IsAttacking = true;
-        attackAction.canceled += context => IsAttacking = false;
+        attackActionLeft.performed += context => IsAttackingLeft = true;
+        attackActionLeft.canceled += context => IsAttackingLeft = false;
 
         placeAction.performed += context => IsPlacing = true;
         placeAction.canceled += context => IsPlacing = false;

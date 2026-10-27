@@ -33,10 +33,10 @@ public class PlayerAttack : MonoBehaviour
     private bool isCharged;
 
     [Header("Aiming")]
-    [SerializeField] private float attackPointDistance = 0.75f;
-    [SerializeField] private float defaultArc = 120f;           // total arc in degrees
-    [SerializeField] private float swordArc = 120f;
-    [SerializeField] private float spearArc = 40f;
+    // [SerializeField] private float attackPointDistance = 0.75f;
+    // [SerializeField] private float defaultArc = 120f;           // total arc in degrees
+    // [SerializeField] private float swordArc = 120f;
+    // [SerializeField] private float spearArc = 40f;
     private Vector2 aimDirection = Vector2.right;
 
     [Header("Detecting hits")]
@@ -47,11 +47,13 @@ public class PlayerAttack : MonoBehaviour
 
     private float _lastAttackTime;
     private float additiveDamageBoost = 0f;
-    private SpriteRenderer sr;
+    private SpriteRenderer srLeft;
+    private SpriteRenderer srRight;
 
     private void Awake()
     {
-        sr = GameObject.Find("ViewInHand").GetComponent<SpriteRenderer>();
+        srLeft = GameObject.Find("ViewInHandLeft").GetComponent<SpriteRenderer>();
+        srRight = GameObject.Find("ViewInHandRight").GetComponent<SpriteRenderer>();
     }
 
     private void Update()
@@ -71,7 +73,7 @@ public class PlayerAttack : MonoBehaviour
             HandleCrossbowCharging();
         }
 
-        if (InputHandler.Instance.IsAttacking && Time.time >= _lastAttackTime + attackCooldown)
+        if (InputHandler.Instance.IsAttackingLeft && Time.time >= _lastAttackTime + attackCooldown)
         {
             //if holding a weapon, use that instead
             if (holdingWeapon)
@@ -80,16 +82,15 @@ public class PlayerAttack : MonoBehaviour
                 damageMult = weapon.DamageMult;
                 switch (weapon.AnimationType)
                 {
-                    case 1: StartSwordAttack(); break; // swing
-                    case 2: StartStabAttack(); break;
+                    case 1: StartSwordAttackLeft(); break; // swing
+                    case 2: StartStabAttackLeft(); break;
                     case 3: StartShootAttack(); break; // shoot
-                    default: StartAttack(); break;
+                    default: StartAttackLeft(); break;
                 }
             } 
             else
             {
-                StartAttack();
-
+                StartAttackLeft();
             }
         }
     }
@@ -100,7 +101,8 @@ public class PlayerAttack : MonoBehaviour
         {
             isHolding = true;
             holdStartTime = Time.time;
-            if (sr && idleSprite) sr.sprite = idleSprite;
+            if (srLeft && idleSprite) srLeft.sprite = idleSprite;
+            if (srRight && idleSprite) srRight.sprite = idleSprite;
         }
 
         if (Input.GetMouseButton(1) && isHolding && !isCharged)
@@ -110,26 +112,30 @@ public class PlayerAttack : MonoBehaviour
             if (held >= timeToFullCharge)
             {
                 isCharged = true;
-                if (sr && chargedSprite) sr.sprite = chargedSprite;
+                if (srLeft && chargedSprite) srLeft.sprite = chargedSprite;
+                if (srRight && chargedSprite) srRight.sprite = chargedSprite;
             }
             else if (held >= timeToFullCharge * 0.5f)
             {
-                if (sr && chargingSprite) sr.sprite = chargingSprite;
+                if (srLeft && chargingSprite) srLeft.sprite = chargingSprite;
+                if (srRight && chargingSprite) srRight.sprite = chargingSprite;
             }
             else
             {
-                if (sr && idleSprite) sr.sprite = idleSprite;
+                if (srLeft && idleSprite) srLeft.sprite = idleSprite;
+                if (srRight && idleSprite) srRight.sprite = idleSprite;
             }
         }
 
         if (Input.GetMouseButtonUp(1) && isHolding && !isCharged)
         {
             isHolding = false;
-            if (sr && idleSprite) sr.sprite = idleSprite;
+            if (srLeft && idleSprite) srLeft.sprite = idleSprite;
+            if (srRight && idleSprite) srRight.sprite = idleSprite;
         }
     }
 
-    private void StartSwordAttack()
+    private void StartSwordAttackLeft()
     {
         if (DetectingHits) 
         {
@@ -142,7 +148,7 @@ public class PlayerAttack : MonoBehaviour
         StartCoroutine(DetectSwordHits());
     }
 
-    private void StartStabAttack()
+    private void StartStabAttackLeft()
     {
         if (DetectingHits) 
         {
@@ -170,10 +176,11 @@ public class PlayerAttack : MonoBehaviour
 
         isCharged = false;
         isHolding = false;
-        if (sr && idleSprite) sr.sprite = idleSprite;
+        if (srLeft && idleSprite) srLeft.sprite = idleSprite;
+        if (srRight && idleSprite) srRight.sprite = idleSprite;
     }
 
-    private void StartAttack()
+    private void StartAttackLeft()
     {
         if (DetectingHits) 
         {
@@ -188,7 +195,6 @@ public class PlayerAttack : MonoBehaviour
 
     public void EndAttack() 
     {
-
     }
 
     public void ApplyDamageBoost(float amount, float duration)
