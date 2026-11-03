@@ -93,6 +93,26 @@ public class PlayerAttack : MonoBehaviour
                 StartAttackLeft();
             }
         }
+
+        if (InputHandler.Instance.IsAttackingRight && Time.time >= _lastAttackTime + attackCooldown)
+        {
+            if (holdingWeapon)
+            {
+                Weapon weapon = (Weapon)SelfInfo.HeldItem;
+                damageMult = weapon.DamageMult;
+                switch (weapon.AnimationType)
+                {
+                    case 1: StartSwordAttackRight(); break; // swing
+                    case 2: StartStabAttackRight(); break;
+                    case 3: StartShootAttack(); break; // shoot
+                    default: StartAttackRight(); break;
+                }
+            } 
+            else
+            {
+                StartAttackRight();
+            }
+        }
     }
 
     private void HandleCrossbowCharging()
@@ -144,7 +164,20 @@ public class PlayerAttack : MonoBehaviour
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
-        animator.SetTrigger("Sword");
+        animator.SetTrigger("SwordLeft");
+        StartCoroutine(DetectSwordHits());
+    }
+
+    private void StartSwordAttackRight()
+    {
+        if (DetectingHits) 
+        {
+            return;
+        }
+        aimDirection = GetDirectionToMouse(transform.position);
+        SelfInfo.isAnimated = true;
+        _lastAttackTime = Time.time;
+        animator.SetTrigger("SwordRight");
         StartCoroutine(DetectSwordHits());
     }
 
@@ -157,7 +190,20 @@ public class PlayerAttack : MonoBehaviour
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
-        animator.SetTrigger("Spear");
+        animator.SetTrigger("SpearLeft");
+        StartCoroutine(DetectSpearHits());
+    }
+
+    private void StartStabAttackRight()
+    {
+        if (DetectingHits) 
+        {
+            return;
+        }
+        aimDirection = GetDirectionToMouse(transform.position);
+        SelfInfo.isAnimated = true;
+        _lastAttackTime = Time.time;
+        animator.SetTrigger("SpearRight");
         StartCoroutine(DetectSpearHits());
     }
 
@@ -189,7 +235,20 @@ public class PlayerAttack : MonoBehaviour
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
         _lastAttackTime = Time.time;
-        animator.SetTrigger("Attack");
+        animator.SetTrigger("AttackLeft");
+        StartCoroutine(DetectHits());
+    }
+
+    private void StartAttackRight()
+    {
+        if (DetectingHits) 
+        {
+            return;
+        }
+        aimDirection = GetDirectionToMouse(transform.position);
+        SelfInfo.isAnimated = true;
+        _lastAttackTime = Time.time;
+        animator.SetTrigger("AttackRight");
         StartCoroutine(DetectHits());
     }
 

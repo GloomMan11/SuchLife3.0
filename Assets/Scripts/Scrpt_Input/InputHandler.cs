@@ -22,7 +22,9 @@ public class InputHandler : MonoBehaviour
     [SerializeField]
     private string sprint = "Sprint";
     [SerializeField]
-    private string attack = "Attack";
+    private string attackLeft = "AttackLeft";
+    [SerializeField]
+    private string attackRight = "AttackRight";
     [SerializeField]
     private string place = "Place";
     [SerializeField]
@@ -47,6 +49,7 @@ public class InputHandler : MonoBehaviour
     private InputAction moveAction;
     private InputAction sprintAction;
     private InputAction attackActionLeft;
+    private InputAction attackActionRight;
     private InputAction placeAction;
     private InputAction previousAction;
     private InputAction nextAction;
@@ -60,6 +63,7 @@ public class InputHandler : MonoBehaviour
     public Vector2 MoveInput { get; private set; }
     public float SprintValue { get; private set; }
     public bool IsAttackingLeft { get; private set; }
+    public bool IsAttackingRight { get; private set; }
     public bool IsPlacing { get; private set; }
     public bool PreviousTriggered { get; private set; }
     public bool NextTriggered { get; private set; }
@@ -105,7 +109,8 @@ public class InputHandler : MonoBehaviour
     {
         moveAction = GetInputAction(move);
         sprintAction = GetInputAction(sprint);
-        attackActionLeft = GetInputAction(attack);
+        attackActionLeft = GetInputAction(attackLeft);
+        attackActionRight = GetInputAction(attackRight);
         placeAction = GetInputAction(place);
         previousAction = GetInputAction(previous);
         nextAction = GetInputAction(next);
@@ -128,6 +133,7 @@ public class InputHandler : MonoBehaviour
         moveAction.Enable();
         sprintAction.Enable();
         attackActionLeft.Enable();
+        attackActionRight.Enable();
         placeAction.Enable();
         previousAction.Enable();
         nextAction.Enable();
@@ -159,6 +165,7 @@ public class InputHandler : MonoBehaviour
             moveAction.Disable();
             sprintAction.Disable();
             attackActionLeft.Disable();
+            attackActionRight.Disable();
             placeAction.Disable();
             previousAction.Disable();
             nextAction.Disable();
@@ -188,6 +195,9 @@ public class InputHandler : MonoBehaviour
 
         attackActionLeft.performed += context => IsAttackingLeft = true;
         attackActionLeft.canceled += context => IsAttackingLeft = false;
+
+        attackActionRight.performed += context => IsAttackingRight = true;
+        attackActionRight.canceled += context => IsAttackingRight = false;
 
         placeAction.performed += context => IsPlacing = true;
         placeAction.canceled += context => IsPlacing = false;
