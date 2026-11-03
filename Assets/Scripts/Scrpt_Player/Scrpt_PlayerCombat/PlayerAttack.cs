@@ -13,7 +13,8 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private LayerMask enemyLayer;
 
     [Header("References")]
-    [SerializeField] private Transform attackPoint;
+    [SerializeField] private Transform attackPointLeft;
+    [SerializeField] private Transform attackPointRight;
     [SerializeField] private Animator animator;
     [SerializeField] private PlayerInfo SelfInfo;
 
@@ -45,7 +46,8 @@ public class PlayerAttack : MonoBehaviour
     private Collider2D[] hitObjects = new Collider2D[10];
 
 
-    private float _lastAttackTime;
+    private float _lastAttackTimeLeft;
+    private float _lastAttackTimeRight;
     private float additiveDamageBoost = 0f;
     private SpriteRenderer srLeft;
     private SpriteRenderer srRight;
@@ -73,7 +75,7 @@ public class PlayerAttack : MonoBehaviour
             HandleCrossbowCharging();
         }
 
-        if (InputHandler.Instance.IsAttackingLeft && Time.time >= _lastAttackTime + attackCooldown)
+        if (InputHandler.Instance.IsAttackingLeft && Time.time >= _lastAttackTimeLeft + attackCooldown)
         {
             //if holding a weapon, use that instead
             if (holdingWeapon)
@@ -94,7 +96,7 @@ public class PlayerAttack : MonoBehaviour
             }
         }
 
-        if (InputHandler.Instance.IsAttackingRight && Time.time >= _lastAttackTime + attackCooldown)
+        if (InputHandler.Instance.IsAttackingRight && Time.time >= _lastAttackTimeRight + attackCooldown)
         {
             if (holdingWeapon)
             {
@@ -163,9 +165,9 @@ public class PlayerAttack : MonoBehaviour
         }
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
-        _lastAttackTime = Time.time;
+        _lastAttackTimeLeft = Time.time;
         animator.SetTrigger("SwordLeft");
-        StartCoroutine(DetectSwordHits());
+        StartCoroutine(DetectSwordHitsLeft());
     }
 
     private void StartSwordAttackRight()
@@ -176,9 +178,9 @@ public class PlayerAttack : MonoBehaviour
         }
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
-        _lastAttackTime = Time.time;
+        _lastAttackTimeRight = Time.time;
         animator.SetTrigger("SwordRight");
-        StartCoroutine(DetectSwordHits());
+        StartCoroutine(DetectSwordHitsRight());
     }
 
     private void StartStabAttackLeft()
@@ -189,9 +191,9 @@ public class PlayerAttack : MonoBehaviour
         }
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
-        _lastAttackTime = Time.time;
+        _lastAttackTimeLeft = Time.time;
         animator.SetTrigger("SpearLeft");
-        StartCoroutine(DetectSpearHits());
+        StartCoroutine(DetectSpearHitsLeft());
     }
 
     private void StartStabAttackRight()
@@ -202,16 +204,16 @@ public class PlayerAttack : MonoBehaviour
         }
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
-        _lastAttackTime = Time.time;
+        _lastAttackTimeRight = Time.time;
         animator.SetTrigger("SpearRight");
-        StartCoroutine(DetectSpearHits());
+        StartCoroutine(DetectSpearHitsRight());
     }
 
     private void StartShootAttack()
     {
         if (!isCharged) return; // not ready to fire yet
 
-        _lastAttackTime = Time.time;
+        _lastAttackTimeLeft = Time.time;
         
         Vector2 dir = GetDirectionToMouse(transform.position);
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
@@ -234,9 +236,9 @@ public class PlayerAttack : MonoBehaviour
         }
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
-        _lastAttackTime = Time.time;
+        _lastAttackTimeLeft = Time.time;
         animator.SetTrigger("AttackLeft");
-        StartCoroutine(DetectHits());
+        StartCoroutine(DetectHitsLeft());
     }
 
     private void StartAttackRight()
@@ -247,9 +249,9 @@ public class PlayerAttack : MonoBehaviour
         }
         aimDirection = GetDirectionToMouse(transform.position);
         SelfInfo.isAnimated = true;
-        _lastAttackTime = Time.time;
+        _lastAttackTimeRight = Time.time;
         animator.SetTrigger("AttackRight");
-        StartCoroutine(DetectHits());
+        StartCoroutine(DetectHitsRight());
     }
 
     public void EndAttack() 
@@ -269,7 +271,7 @@ public class PlayerAttack : MonoBehaviour
         Debug.Log("Damage boost ended.");
     }
 
-    private IEnumerator DetectHits()
+    private IEnumerator DetectHitsLeft()
     {
         DetectingHits = true;
         alreadyHit.Clear();
@@ -277,7 +279,7 @@ public class PlayerAttack : MonoBehaviour
 
         while (elapsed < 1.0)
         {
-            Vector2 currentPos = attackPoint.position;
+            Vector2 currentPos = attackPointLeft.position;
             int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
 
             for (int i = 0; i < count; i++)
@@ -297,7 +299,35 @@ public class PlayerAttack : MonoBehaviour
         DetectingHits = false;
     }
 
-    private IEnumerator DetectSwordHits()
+    private IEnumerator DetectHitsRight()
+    {
+        DetectingHits = true;
+        alreadyHit.Clear();
+        float elapsed = 0f;
+
+        while (elapsed < 1.0)
+        {
+            Vector2 currentPos = attackPointRight.position;
+            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D hitObject = hitObjects[i];
+                
+                if (!alreadyHit.Contains(hitObject))
+                {
+                    alreadyHit.Add(hitObject);
+                    ApplyHits(hitObject, attackDamage);
+                }
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        DetectingHits = false;
+    }
+
+    private IEnumerator DetectSwordHitsLeft()
     {
         DetectingHits = true;
         alreadyHit.Clear();
@@ -306,7 +336,7 @@ public class PlayerAttack : MonoBehaviour
 
         while (elapsed < 1.0)
         {
-            Vector2 currentPos = attackPoint.position;
+            Vector2 currentPos = attackPointLeft.position;
             int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
 
             for (int i = 0; i < count; i++)
@@ -326,7 +356,36 @@ public class PlayerAttack : MonoBehaviour
         DetectingHits = false;
     }
 
-    private IEnumerator DetectSpearHits()
+    private IEnumerator DetectSwordHitsRight()
+    {
+        DetectingHits = true;
+        alreadyHit.Clear();
+        float elapsed = 0f;
+        int swordDamage = Mathf.RoundToInt(attackDamage * damageMult);
+
+        while (elapsed < 1.0)
+        {
+            Vector2 currentPos = attackPointRight.position;
+            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D hitObject = hitObjects[i];
+                
+                if (!alreadyHit.Contains(hitObject))
+                {
+                    alreadyHit.Add(hitObject);
+                    ApplyHits(hitObject, swordDamage);
+                }
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        DetectingHits = false;
+    }
+
+    private IEnumerator DetectSpearHitsLeft()
     {
         DetectingHits = true;
         alreadyHit.Clear();
@@ -335,7 +394,36 @@ public class PlayerAttack : MonoBehaviour
 
         while (elapsed < 1.0)
         {
-            Vector2 currentPos = attackPoint.position;
+            Vector2 currentPos = attackPointLeft.position;
+            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider2D hitObject = hitObjects[i];
+                
+                if (!alreadyHit.Contains(hitObject))
+                {
+                    alreadyHit.Add(hitObject);
+                    ApplyHits(hitObject, spearDamage);
+                }
+            }
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        DetectingHits = false;
+    }
+
+    private IEnumerator DetectSpearHitsRight()
+    {
+        DetectingHits = true;
+        alreadyHit.Clear();
+        float elapsed = 0f;
+        int spearDamage = Mathf.RoundToInt(attackDamage * damageMult);
+
+        while (elapsed < 1.0)
+        {
+            Vector2 currentPos = attackPointRight.position;
             int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
 
             for (int i = 0; i < count; i++)
@@ -397,9 +485,9 @@ public class PlayerAttack : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (attackPoint == null) return;
+        if (attackPointLeft == null) return;
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 
     private Vector2 GetDirectionToMouse(Vector2 from)
