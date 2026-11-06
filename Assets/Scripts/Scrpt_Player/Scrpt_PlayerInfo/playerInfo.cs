@@ -1,108 +1,148 @@
 using System;
 using System.Net.Sockets;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class PlayerInfo : MonoBehaviour
 {
     //data class to store attributes concerning the player so multiple scripts can access
     //put attributes like health in here instead of the health class
 
-    //held item info
     public GameObject Player { get; private set; }
     private string username;
-    private string heldType;
-    private Item _heldItem;
-    public int heldItemIndex = 0;
-    //public PlayerItemHoldView heldItemView;
-    [SerializeField] GameObject currentlyHeld; //currently held item
-
-    public Item CurrentlyHeldItem;
-
+ 
+    [Header("Held item objects (the sprite shown in each hand)")]
+    //the old single "currentlyHeld" reference becomes the left hand; assign the right hand object in the inspector
+    [FormerlySerializedAs("currentlyHeld")]
+    [SerializeField] private GameObject currentlyHeldLeft;
+    [SerializeField] private GameObject currentlyHeldRight;
+ 
     //used to make weapons rotate towards the mouse slightly
-    private float currentAngle;
-    private float angleVelocity;
-    private float defaultLocalAngle;
-    public bool isAnimated = false;
+    [Header("Held item tilt")]
     [SerializeField] private float maxTiltAngle = 10f;
-    [SerializeField] private float restLocalAngle = 180f;
-
+    [FormerlySerializedAs("restLocalAngle")]
+    [SerializeField] private float restLocalAngleLeft = 180f;
+    [SerializeField] private float restLocalAngleRight = 180f;
+ 
+    //Everything below is per hand, indexed with (int)Hand
+    private readonly GameObject[] heldObjects = new GameObject[2];
+    private readonly SpriteRenderer[] heldRenderers = new SpriteRenderer[2];
+    private readonly Item[] heldItems = new Item[2];
+    private readonly int[] heldItemIndices = { -1, -1 };
+    private readonly bool[] isAnimated = new bool[2];
+    private readonly float[] currentAngle = new float[2];
+    private readonly float[] angleVelocity = new float[2];
+ 
     //Unique behavior of NOT being replicated between clients
     //Server grabs GUID from a tcp request but never shares it to other clients
     public Guid playerGuid;
 
-    private void Start()
+    private void Awake()
     {
         Player = gameObject;
-        Transform held = currentlyHeld.transform;
-        currentAngle = held.eulerAngles.z;
-        defaultLocalAngle = held.localEulerAngles.z; // resting angle from the prefab
-        //heldItemView = GameObject.Find("ViewInHand").GetComponent<PlayerItemHoldView>();
+ 
+        heldObjects[(int)Hand.Left] = currentlyHeldLeft;
+        heldObjects[(int)Hand.Right] = currentlyHeldRight;
+ 
+        for (int h = 0; h < 2; h++)
+        {
+            if (heldObjects[h] != null)
+            {
+                heldRenderers[h] = heldObjects[h].GetComponent<SpriteRenderer>();
+            }
+        }
     }
-    public Item HeldItem
+
+    private void Start()
     {
-        get
+        for (int h = 0; h < 2; h++)
         {
-            return _heldItem;
-        }
-
-        set
-        {
-            //Debug.Log("change held item!");
-            _heldItem = value;
-            //when held item is changed, change the renderer accordingly
-            playerHandUpdate(_heldItem);
+            if (heldObjects[h] != null)
+            {
+                currentAngle[h] = heldObjects[h].transform.eulerAngles.z;
+            }
         }
     }
 
-    private void playerHandUpdate(Item newItem)
+    public Item GetHeldItem(Hand hand)
     {
-        CurrentlyHeldItem = newItem;
-
-        //switch rotation when that gets added
-        if (newItem != null)
+        return heldItems[(int)hand];
+    }
+ 
+    //inventory slot the hand's item came from, -1 if the hand is empty
+    public int GetHeldItemIndex(Hand hand)
+    {
+        return heldItemIndices[(int)hand];
+    }
+ 
+    public SpriteRenderer GetHandRenderer(Hand hand)
+    {
+        return heldRenderers[(int)hand];
+    }
+ 
+    //true while an attack animation owns the hand's rotation
+    public void SetAnimated(Hand hand, bool value)
+    {
+        isAnimated[(int)hand] = value;
+    }
+ 
+    //called by PlayerInventory whenever what a hand is holding changes
+    public void SetHeldItem(Hand hand, Item newItem, int slotIndex)
+    {
+        int h = (int)hand;
+        heldItems[h] = newItem;
+        heldItemIndices[h] = newItem != null ? slotIndex : -1;
+ 
+        //when held item is changed, change the renderer accordingly
+        if (heldRenderers[h] != null)
         {
-            currentlyHeld.GetComponent<SpriteRenderer>().sprite = CurrentlyHeldItem.icon;
-        }
-        else
-        {
-            currentlyHeld.GetComponent<SpriteRenderer>().sprite = null;
+            heldRenderers[h].sprite = newItem != null ? newItem.icon : null;
         }
     }
-
-
+ 
     public void Update()
     {
-        if (CurrentlyHeldItem == null)
+        UpdateHandRotation(Hand.Left);
+        UpdateHandRotation(Hand.Right);
+    }
+ 
+    private void UpdateHandRotation(Hand hand)
+    {
+        int h = (int)hand;
+        Item item = heldItems[h];
+ 
+        if (item == null || heldObjects[h] == null)
         {
             return;
         }
-
-        Transform held = currentlyHeld.transform;
+ 
+        Transform held = heldObjects[h].transform;
+        float restLocalAngle = hand == Hand.Left ? restLocalAngleLeft : restLocalAngleRight;
         float parentAngle = held.parent != null ? held.parent.eulerAngles.z : 0f;
         float restAngle = parentAngle + restLocalAngle;
-
-        if (CurrentlyHeldItem.useFlag == 4 && !isAnimated)
+ 
+        if (item.useFlag == 4 && !isAnimated[h])
         {
             Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector2 dir = mouseWorld - held.position;
             float mouseAngle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
-
+ 
             float offsetFromRest = Mathf.DeltaAngle(restAngle, mouseAngle);
             float targetAngle = restAngle + Mathf.Clamp(offsetFromRest, -maxTiltAngle, maxTiltAngle);
-            
-            currentAngle = Mathf.SmoothDampAngle(currentAngle, targetAngle, ref angleVelocity, 0.05f);
-            held.rotation = Quaternion.Euler(0f, 0f, currentAngle);
+ 
+            currentAngle[h] = Mathf.SmoothDampAngle(currentAngle[h], targetAngle, ref angleVelocity[h], 0.05f);
+            held.rotation = Quaternion.Euler(0f, 0f, currentAngle[h]);
         }
-        else if (CurrentlyHeldItem.useFlag == 4)
+        else if (item.useFlag == 4)
         {
-            held.rotation = Quaternion.Euler(0f, 0f, currentAngle);
+            held.rotation = Quaternion.Euler(0f, 0f, currentAngle[h]);
         }
         else
         {
             // Resting angle, relative to the player's orientation
             held.localRotation = Quaternion.Euler(0, 0, restLocalAngle);
-            currentAngle = restAngle;
-            angleVelocity = 0f;
+            currentAngle[h] = restAngle;
+            angleVelocity[h] = 0f;
         }
     }
 }

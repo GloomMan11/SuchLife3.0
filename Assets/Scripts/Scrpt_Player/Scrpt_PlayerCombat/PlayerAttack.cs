@@ -1,9 +1,7 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using System.Collections.Generic;
-using System;
 using System.Collections;
-
+ 
 public class PlayerAttack : MonoBehaviour
 {
     [Header("Attack Settings")]
@@ -11,16 +9,13 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private int attackDamage = 20;
     [SerializeField] private float attackCooldown = 1f;
     [SerializeField] private LayerMask enemyLayer;
-
+ 
     [Header("References")]
     [SerializeField] private Transform attackPointLeft;
     [SerializeField] private Transform attackPointRight;
     [SerializeField] private Animator animator;
     [SerializeField] private PlayerInfo SelfInfo;
-
-    [Header("Sword/Spear Settings")]
-    [SerializeField] private float damageMult = 1.5f;
-    
+ 
     [Header("Crossbow Settings")]
     [SerializeField] private float shotSpawnDistance = 0.6f;
     [SerializeField] private GameObject crossbowProjectile;
@@ -29,35 +24,31 @@ public class PlayerAttack : MonoBehaviour
     [SerializeField] private Sprite idleSprite;
     [SerializeField] private Sprite chargingSprite;
     [SerializeField] private Sprite chargedSprite;
-    private float holdStartTime;
-    private bool isHolding;
-    private bool isCharged;
-
+ 
+    //Crossbow state, one entry per hand (index with (int)Hand)
+    private readonly float[] holdStartTime = new float[2];
+    private readonly bool[] isHolding = new bool[2];
+    private readonly bool[] isCharged = new bool[2];
+    private readonly Item[] lastHeldItem = new Item[2];
+ 
     [Header("Aiming")]
-    // [SerializeField] private float attackPointDistance = 0.75f;
-    // [SerializeField] private float defaultArc = 120f;           // total arc in degrees
-    // [SerializeField] private float swordArc = 120f;
-    // [SerializeField] private float spearArc = 40f;
     private Vector2 aimDirection = Vector2.right;
-
+ 
+    //Animator trigger names, per hand
+    private static readonly string[] punchTriggers = { "AttackLeft", "AttackRight" };
+    private static readonly string[] swordTriggers = { "SwordLeft", "SwordRight" };
+    private static readonly string[] spearTriggers = { "SpearLeft", "SpearRight" };
+ 
     [Header("Detecting hits")]
+    //hit detection state is shared by both hands on purpose, so only one melee attack can be
+    //in progress at a time (that is the current behavior, to be decided later)
     private HashSet<Collider2D> alreadyHit = new HashSet<Collider2D>(); 
     private bool DetectingHits;
     private Collider2D[] hitObjects = new Collider2D[10];
-
-
-    private float _lastAttackTimeLeft;
-    private float _lastAttackTimeRight;
+ 
+    private readonly float[] lastAttackTime = new float[2];
     private float additiveDamageBoost = 0f;
-    private SpriteRenderer srLeft;
-    private SpriteRenderer srRight;
-
-    private void Awake()
-    {
-        srLeft = GameObject.Find("ViewInHandLeft").GetComponent<SpriteRenderer>();
-        srRight = GameObject.Find("ViewInHandRight").GetComponent<SpriteRenderer>();
-    }
-
+ 
     private void Update()
     {
         if (InputHandler.Instance == null)
@@ -65,223 +56,184 @@ public class PlayerAttack : MonoBehaviour
             Debug.LogError("InputHandler.Instance is null!");
             return;
         }
-
-        bool holdingWeapon = InputHandler.currSelectedContext == InputHandler.SelectedContext.Weapon
-                              && SelfInfo.HeldItem is Weapon;
-
-        // Crossbow charge/rotation must run every frame while held, regardless of the IsAttacking/cooldown gate
-        if (holdingWeapon && ((Weapon)SelfInfo.HeldItem).AnimationType == 3)
+ 
+        HandleHand(Hand.Left);
+        HandleHand(Hand.Right);
+    }
+ 
+    private void HandleHand(Hand hand)
+    {
+        int h = (int)hand;
+        InputHandler input = InputHandler.Instance;
+        InputHandler.SelectedContext context = InputHandler.GetSelectedContext(hand);
+        Item held = SelfInfo.GetHeldItem(hand);
+ 
+        //swapping what is in the hand throws away any crossbow charge
+        if (held != lastHeldItem[h])
         {
-            HandleCrossbowCharging();
+            lastHeldItem[h] = held;
+            isHolding[h] = false;
+            isCharged[h] = false;
         }
-
-        if (InputHandler.Instance.IsAttackingLeft && Time.time >= _lastAttackTimeLeft + attackCooldown)
+ 
+        Weapon weapon = context == InputHandler.SelectedContext.Weapon ? held as Weapon : null;
+ 
+        //Crossbow: hold the hand's button to charge, press again once charged to fire
+        if (weapon != null && weapon.AnimationType == 3)
         {
-            //if holding a weapon, use that instead
-            if (holdingWeapon)
+            HandleCrossbow(hand);
+            return;
+        }
+ 
+        //placing blocks and drinking potions use the hand's button, so they take priority over attacking
+        if (context == InputHandler.SelectedContext.Block || context == InputHandler.SelectedContext.Consumable)
+        {
+            return;
+        }
+ 
+        if (!input.IsAttacking(hand) || Time.time < lastAttackTime[h] + attackCooldown)
+        {
+            return;
+        }
+ 
+        if (weapon != null)
+        {
+            int weaponDamage = Mathf.RoundToInt(attackDamage * weapon.DamageMult);
+ 
+            switch (weapon.AnimationType)
             {
-                Weapon weapon = (Weapon)SelfInfo.HeldItem;
-                damageMult = weapon.DamageMult;
-                switch (weapon.AnimationType)
+                case 1: StartMelee(hand, swordTriggers[h], weaponDamage); break; // swing
+                case 2: StartMelee(hand, spearTriggers[h], weaponDamage); break; // stab
+                default: StartMelee(hand, punchTriggers[h], attackDamage); break;
+            }
+        }
+        else
+        {
+            //empty hand (or tool) punches
+            StartMelee(hand, punchTriggers[h], attackDamage);
+        }
+    }
+ 
+    private void HandleCrossbow(Hand hand)
+    {
+        int h = (int)hand;
+        bool held = InputHandler.Instance.IsAttacking(hand);
+        bool pressed = InputHandler.Instance.WasAttackPressed(hand);
+        SpriteRenderer sr = SelfInfo.GetHandRenderer(hand);
+ 
+        if (pressed)
+        {
+            if (isCharged[h])
+            {
+                if (Time.time >= lastAttackTime[h] + attackCooldown)
                 {
-                    case 1: StartSwordAttackLeft(); break; // swing
-                    case 2: StartStabAttackLeft(); break;
-                    case 3: StartShootAttack(); break; // shoot
-                    default: StartAttackLeft(); break;
+                    FireCrossbow(hand);
                 }
-            } 
+            }
             else
             {
-                StartAttackLeft();
+                isHolding[h] = true;
+                holdStartTime[h] = Time.time;
+                SetSprite(sr, idleSprite);
             }
         }
-
-        if (InputHandler.Instance.IsAttackingRight && Time.time >= _lastAttackTimeRight + attackCooldown)
+ 
+        if (isHolding[h] && !isCharged[h])
         {
-            if (holdingWeapon)
+            if (!held)
             {
-                Weapon weapon = (Weapon)SelfInfo.HeldItem;
-                damageMult = weapon.DamageMult;
-                switch (weapon.AnimationType)
+                //let go before fully charged
+                isHolding[h] = false;
+                SetSprite(sr, idleSprite);
+            }
+            else
+            {
+                float heldTime = Time.time - holdStartTime[h];
+ 
+                if (heldTime >= timeToFullCharge)
                 {
-                    case 1: StartSwordAttackRight(); break; // swing
-                    case 2: StartStabAttackRight(); break;
-                    case 3: StartShootAttack(); break; // shoot
-                    default: StartAttackRight(); break;
+                    isCharged[h] = true;
+                    SetSprite(sr, chargedSprite);
                 }
-            } 
-            else
-            {
-                StartAttackRight();
+                else if (heldTime >= timeToFullCharge * 0.5f)
+                {
+                    SetSprite(sr, chargingSprite);
+                }
+                else
+                {
+                    SetSprite(sr, idleSprite);
+                }
             }
         }
     }
-
-    private void HandleCrossbowCharging()
+ 
+    private void FireCrossbow(Hand hand)
     {
-        if (Input.GetMouseButtonDown(1) && !isCharged)
-        {
-            isHolding = true;
-            holdStartTime = Time.time;
-            if (srLeft && idleSprite) srLeft.sprite = idleSprite;
-            if (srRight && idleSprite) srRight.sprite = idleSprite;
-        }
-
-        if (Input.GetMouseButton(1) && isHolding && !isCharged)
-        {
-            float held = Time.time - holdStartTime;
-
-            if (held >= timeToFullCharge)
-            {
-                isCharged = true;
-                if (srLeft && chargedSprite) srLeft.sprite = chargedSprite;
-                if (srRight && chargedSprite) srRight.sprite = chargedSprite;
-            }
-            else if (held >= timeToFullCharge * 0.5f)
-            {
-                if (srLeft && chargingSprite) srLeft.sprite = chargingSprite;
-                if (srRight && chargingSprite) srRight.sprite = chargingSprite;
-            }
-            else
-            {
-                if (srLeft && idleSprite) srLeft.sprite = idleSprite;
-                if (srRight && idleSprite) srRight.sprite = idleSprite;
-            }
-        }
-
-        if (Input.GetMouseButtonUp(1) && isHolding && !isCharged)
-        {
-            isHolding = false;
-            if (srLeft && idleSprite) srLeft.sprite = idleSprite;
-            if (srRight && idleSprite) srRight.sprite = idleSprite;
-        }
-    }
-
-    private void StartSwordAttackLeft()
-    {
-        if (DetectingHits) 
-        {
-            return;
-        }
-        aimDirection = GetDirectionToMouse(transform.position);
-        SelfInfo.isAnimated = true;
-        _lastAttackTimeLeft = Time.time;
-        animator.SetTrigger("SwordLeft");
-        StartCoroutine(DetectSwordHitsLeft());
-    }
-
-    private void StartSwordAttackRight()
-    {
-        if (DetectingHits) 
-        {
-            return;
-        }
-        aimDirection = GetDirectionToMouse(transform.position);
-        SelfInfo.isAnimated = true;
-        _lastAttackTimeRight = Time.time;
-        animator.SetTrigger("SwordRight");
-        StartCoroutine(DetectSwordHitsRight());
-    }
-
-    private void StartStabAttackLeft()
-    {
-        if (DetectingHits) 
-        {
-            return;
-        }
-        aimDirection = GetDirectionToMouse(transform.position);
-        SelfInfo.isAnimated = true;
-        _lastAttackTimeLeft = Time.time;
-        animator.SetTrigger("SpearLeft");
-        StartCoroutine(DetectSpearHitsLeft());
-    }
-
-    private void StartStabAttackRight()
-    {
-        if (DetectingHits) 
-        {
-            return;
-        }
-        aimDirection = GetDirectionToMouse(transform.position);
-        SelfInfo.isAnimated = true;
-        _lastAttackTimeRight = Time.time;
-        animator.SetTrigger("SpearRight");
-        StartCoroutine(DetectSpearHitsRight());
-    }
-
-    private void StartShootAttack()
-    {
-        if (!isCharged) return; // not ready to fire yet
-
-        _lastAttackTimeLeft = Time.time;
-        
+        int h = (int)hand;
+        lastAttackTime[h] = Time.time;
+ 
         Vector2 dir = GetDirectionToMouse(transform.position);
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-
+ 
         Vector2 spawnPos = (Vector2)crossbowShotPoint.position + dir * shotSpawnDistance;
-
+ 
         Instantiate(crossbowProjectile, spawnPos, Quaternion.Euler(0f, 0f, angle - 90f));
-
-        isCharged = false;
-        isHolding = false;
-        if (srLeft && idleSprite) srLeft.sprite = idleSprite;
-        if (srRight && idleSprite) srRight.sprite = idleSprite;
+ 
+        isCharged[h] = false;
+        isHolding[h] = false;
+        SetSprite(SelfInfo.GetHandRenderer(hand), idleSprite);
     }
-
-    private void StartAttackLeft()
+ 
+    private void SetSprite(SpriteRenderer sr, Sprite sprite)
+    {
+        if (sr != null && sprite != null)
+        {
+            sr.sprite = sprite;
+        }
+    }
+ 
+    private void StartMelee(Hand hand, string trigger, int damage)
     {
         if (DetectingHits) 
         {
             return;
         }
         aimDirection = GetDirectionToMouse(transform.position);
-        SelfInfo.isAnimated = true;
-        _lastAttackTimeLeft = Time.time;
-        animator.SetTrigger("AttackLeft");
-        StartCoroutine(DetectHitsLeft());
+        SelfInfo.SetAnimated(hand, true);
+        lastAttackTime[(int)hand] = Time.time;
+        animator.SetTrigger(trigger);
+        StartCoroutine(DetectHits(hand, damage));
     }
-
-    private void StartAttackRight()
-    {
-        if (DetectingHits) 
-        {
-            return;
-        }
-        aimDirection = GetDirectionToMouse(transform.position);
-        SelfInfo.isAnimated = true;
-        _lastAttackTimeRight = Time.time;
-        animator.SetTrigger("AttackRight");
-        StartCoroutine(DetectHitsRight());
-    }
-
+ 
     public void EndAttack() 
     {
     }
-
+ 
     public void ApplyDamageBoost(float amount, float duration)
     {
         additiveDamageBoost = amount;
         Debug.Log($"Applied +{amount} damage boost for {duration} seconds.");
         Invoke(nameof(RemoveDamageBoost), duration);
     }
-
+ 
     private void RemoveDamageBoost()
     {
         additiveDamageBoost = 0f;
         Debug.Log("Damage boost ended.");
     }
-
-    private IEnumerator DetectHitsLeft()
+ 
+    private IEnumerator DetectHits(Hand hand, int damage)
     {
         DetectingHits = true;
         alreadyHit.Clear();
+        Transform attackPoint = hand == Hand.Left ? attackPointLeft : attackPointRight;
         float elapsed = 0f;
-
+ 
         while (elapsed < 1.0)
         {
-            Vector2 currentPos = attackPointLeft.position;
+            Vector2 currentPos = attackPoint.position;
             int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
-
+ 
             for (int i = 0; i < count; i++)
             {
                 Collider2D hitObject = hitObjects[i];
@@ -289,161 +241,20 @@ public class PlayerAttack : MonoBehaviour
                 if (!alreadyHit.Contains(hitObject))
                 {
                     alreadyHit.Add(hitObject);
-                    ApplyHits(hitObject, attackDamage);
+                    ApplyHits(hitObject, damage, hand);
                 }
             }
             elapsed += Time.deltaTime;
             yield return null;
         }
-
+ 
         DetectingHits = false;
+ 
+        //make sure the hand is never left stuck in the animated state if nothing was hit
+        SelfInfo.SetAnimated(hand, false);
     }
-
-    private IEnumerator DetectHitsRight()
-    {
-        DetectingHits = true;
-        alreadyHit.Clear();
-        float elapsed = 0f;
-
-        while (elapsed < 1.0)
-        {
-            Vector2 currentPos = attackPointRight.position;
-            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
-
-            for (int i = 0; i < count; i++)
-            {
-                Collider2D hitObject = hitObjects[i];
-                
-                if (!alreadyHit.Contains(hitObject))
-                {
-                    alreadyHit.Add(hitObject);
-                    ApplyHits(hitObject, attackDamage);
-                }
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        DetectingHits = false;
-    }
-
-    private IEnumerator DetectSwordHitsLeft()
-    {
-        DetectingHits = true;
-        alreadyHit.Clear();
-        float elapsed = 0f;
-        int swordDamage = Mathf.RoundToInt(attackDamage * damageMult);
-
-        while (elapsed < 1.0)
-        {
-            Vector2 currentPos = attackPointLeft.position;
-            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
-
-            for (int i = 0; i < count; i++)
-            {
-                Collider2D hitObject = hitObjects[i];
-                
-                if (!alreadyHit.Contains(hitObject))
-                {
-                    alreadyHit.Add(hitObject);
-                    ApplyHits(hitObject, swordDamage);
-                }
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        DetectingHits = false;
-    }
-
-    private IEnumerator DetectSwordHitsRight()
-    {
-        DetectingHits = true;
-        alreadyHit.Clear();
-        float elapsed = 0f;
-        int swordDamage = Mathf.RoundToInt(attackDamage * damageMult);
-
-        while (elapsed < 1.0)
-        {
-            Vector2 currentPos = attackPointRight.position;
-            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
-
-            for (int i = 0; i < count; i++)
-            {
-                Collider2D hitObject = hitObjects[i];
-                
-                if (!alreadyHit.Contains(hitObject))
-                {
-                    alreadyHit.Add(hitObject);
-                    ApplyHits(hitObject, swordDamage);
-                }
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        DetectingHits = false;
-    }
-
-    private IEnumerator DetectSpearHitsLeft()
-    {
-        DetectingHits = true;
-        alreadyHit.Clear();
-        float elapsed = 0f;
-        int spearDamage = Mathf.RoundToInt(attackDamage * damageMult);
-
-        while (elapsed < 1.0)
-        {
-            Vector2 currentPos = attackPointLeft.position;
-            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
-
-            for (int i = 0; i < count; i++)
-            {
-                Collider2D hitObject = hitObjects[i];
-                
-                if (!alreadyHit.Contains(hitObject))
-                {
-                    alreadyHit.Add(hitObject);
-                    ApplyHits(hitObject, spearDamage);
-                }
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        DetectingHits = false;
-    }
-
-    private IEnumerator DetectSpearHitsRight()
-    {
-        DetectingHits = true;
-        alreadyHit.Clear();
-        float elapsed = 0f;
-        int spearDamage = Mathf.RoundToInt(attackDamage * damageMult);
-
-        while (elapsed < 1.0)
-        {
-            Vector2 currentPos = attackPointRight.position;
-            int count = Physics2D.OverlapCircleNonAlloc(currentPos, 0.5f, hitObjects);
-
-            for (int i = 0; i < count; i++)
-            {
-                Collider2D hitObject = hitObjects[i];
-                
-                if (!alreadyHit.Contains(hitObject))
-                {
-                    alreadyHit.Add(hitObject);
-                    ApplyHits(hitObject, spearDamage);
-                }
-            }
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        DetectingHits = false;
-    }
-
-    private void ApplyHits(Collider2D enemy, int Damage)
+ 
+    private void ApplyHits(Collider2D enemy, int Damage, Hand hand)
     {
         if (enemy.TryGetComponent<Mob>(out var mob))
         {
@@ -451,7 +262,7 @@ public class PlayerAttack : MonoBehaviour
             {
                 return;
             }
-
+ 
             if (enemy.TryGetComponent<Health>(out var health))
             {
                 int boostedDamage = Mathf.RoundToInt(Damage + additiveDamageBoost);
@@ -466,14 +277,14 @@ public class PlayerAttack : MonoBehaviour
             mob.applyKnockback(knockbackVector, knockbackForce);
             //Debug.Log(knockbackVector);
         }
-        SelfInfo.isAnimated = false;   
+        SelfInfo.SetAnimated(hand, false);   
     }
-
+ 
     private bool IsBlockedByWall(Collider2D target)
     {
         Vector2 origin = transform.position;
         Vector2 targetPoint = target.ClosestPoint(origin);
-
+ 
         RaycastHit2D[] hits = Physics2D.LinecastAll(origin, targetPoint);
         foreach (RaycastHit2D hit in hits)
         {
@@ -482,14 +293,14 @@ public class PlayerAttack : MonoBehaviour
         }
         return false;
     }
-
+ 
     private void OnDrawGizmosSelected()
     {
         if (attackPointLeft == null) return;
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
-
+ 
     private Vector2 GetDirectionToMouse(Vector2 from)
     {
         Vector2 mouseWorld = Camera.main.ScreenToWorldPoint(Input.mousePosition);

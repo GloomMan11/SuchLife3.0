@@ -31,6 +31,7 @@
   <Project Path="DungeonsAssem.csproj" />
   <Project Path="Unity.GraphAuthoring.Editor.csproj" />
   <Project Path="NetworkingAssem.csproj" />
+  <Project Path="EnumAssembly.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.Shared.csproj" />
   <Project Path="EntityBaseAssem.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Editor.Shared.csproj" />

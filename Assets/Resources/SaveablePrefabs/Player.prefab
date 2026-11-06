@@ -2791,7 +2791,6 @@ MonoBehaviour:
   attackPointRight: {fileID: 605573535715280567}
   animator: {fileID: 3422614386554052806}
   SelfInfo: {fileID: 7788973252339243208}
-  damageMult: 1.5
   shotSpawnDistance: 0.6
   crossbowProjectile: {fileID: 7840616202947656859, guid: fb0990f8d1ac54421b170a1a617cc61a, type: 3}
   crossbowShotPoint: {fileID: 7453435974949656298}
@@ -2817,7 +2816,6 @@ MonoBehaviour:
   fullInventory: {fileID: 0}
   hotbar: []
   fullInv: []
-  selectedItem: -1
   empty: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   CraftingUI: {fileID: 0}
 --- !u!114 &7788973252339243208
@@ -2832,12 +2830,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 937ae1408b30a9f4db9da1e74c44305b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heldItemIndex: 0
-  currentlyHeld: {fileID: 324757969995828777}
-  CurrentlyHeldItem: {fileID: 0}
-  isAnimated: 0
+  currentlyHeldLeft: {fileID: 324757969995828777}
+  currentlyHeldRight: {fileID: 2950860458493353873}
   maxTiltAngle: 10
-  restLocalAngle: 180
+  restLocalAngleLeft: 180
+  restLocalAngleRight: 180
 --- !u!114 &2862809863402705604
 MonoBehaviour:
   m_ObjectHideFlags: 0
