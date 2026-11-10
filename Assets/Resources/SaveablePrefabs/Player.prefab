@@ -2793,7 +2793,8 @@ MonoBehaviour:
   SelfInfo: {fileID: 7788973252339243208}
   shotSpawnDistance: 0.6
   crossbowProjectile: {fileID: 7840616202947656859, guid: fb0990f8d1ac54421b170a1a617cc61a, type: 3}
-  crossbowShotPoint: {fileID: 7453435974949656298}
+  crossbowShotPointLeft: {fileID: 7453435974949656298}
+  crossbowShotPointRight: {fileID: 605573535715280567}
   timeToFullCharge: 1
   idleSprite: {fileID: -6337030637045467450, guid: b03f95bcc95f44ec68ef0ec2f0b73356, type: 3}
   chargingSprite: {fileID: -6337030637045467450, guid: b03f95bcc95f44ec68ef0ec2f0b73356, type: 3}

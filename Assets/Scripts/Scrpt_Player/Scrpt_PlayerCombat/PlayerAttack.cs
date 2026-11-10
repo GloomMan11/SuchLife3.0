@@ -19,7 +19,8 @@ public class PlayerAttack : MonoBehaviour
     [Header("Crossbow Settings")]
     [SerializeField] private float shotSpawnDistance = 0.6f;
     [SerializeField] private GameObject crossbowProjectile;
-    [SerializeField] private Transform crossbowShotPoint;
+    [SerializeField] private Transform crossbowShotPointLeft;
+    [SerializeField] private Transform crossbowShotPointRight;
     [SerializeField] private float timeToFullCharge = 1f;
     [SerializeField] private Sprite idleSprite;
     [SerializeField] private Sprite chargingSprite;
@@ -175,9 +176,18 @@ public class PlayerAttack : MonoBehaviour
         Vector2 dir = GetDirectionToMouse(transform.position);
         float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
  
-        Vector2 spawnPos = (Vector2)crossbowShotPoint.position + dir * shotSpawnDistance;
+        Vector2 spawnPosLeft = (Vector2)crossbowShotPointLeft.position + dir * shotSpawnDistance;
+        Vector2 spawnPosRight = (Vector2)crossbowShotPointRight.position + dir * shotSpawnDistance;
  
-        Instantiate(crossbowProjectile, spawnPos, Quaternion.Euler(0f, 0f, angle - 90f));
+ 
+        if (h == 0)
+        {
+            Instantiate(crossbowProjectile, spawnPosLeft, Quaternion.Euler(0f, 0f, angle - 90f));
+        }
+        else 
+        {
+            Instantiate(crossbowProjectile, spawnPosRight, Quaternion.Euler(0f, 0f, angle - 90f));
+        }
  
         isCharged[h] = false;
         isHolding[h] = false;
