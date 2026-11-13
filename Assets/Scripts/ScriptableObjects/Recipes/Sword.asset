@@ -15,8 +15,9 @@ MonoBehaviour:
   width: 1
   height: 3
   recipe_details:
-  - {fileID: 11400000, guid: 98fddb1367a834d4ab76ce4c36f09d1f, type: 2}
-  - {fileID: 11400000, guid: 98fddb1367a834d4ab76ce4c36f09d1f, type: 2}
+  - {fileID: 11400000, guid: e9d8760ba8756a04092c12bbf64cefcc, type: 2}
+  - {fileID: 11400000, guid: e9d8760ba8756a04092c12bbf64cefcc, type: 2}
+  - {fileID: 11400000, guid: 7b525d9ab2765d744ad0b99ed33c7a12, type: 2}
   result: {fileID: 11400000, guid: 66fb5a5ff3a31924eb7b465799c55933, type: 2}
   resultQuantity: 1
   anyOrder: 0
