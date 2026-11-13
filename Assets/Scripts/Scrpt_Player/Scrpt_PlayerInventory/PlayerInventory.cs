@@ -328,7 +328,7 @@ public class PlayerInventory : MonoBehaviour
         int isInHotbar = 0;
         foreach (InventorySlot slot in inventory){
  
-            if(slot.item == item){
+            if(slot.item == item && slot.quantity < item.maxStack){
  
                 //Item already exists in inventory, therefore, we increment its amount.
                 slot.quantity++; 
